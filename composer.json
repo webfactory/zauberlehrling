@@ -21,7 +21,9 @@
         "symfony/symfony": "3.2.*",
         "symfony/monolog-bundle": "^3.0",
         "sensio/distribution-bundle": "^5.0",
-        "incenteev/composer-parameter-handler": "^2.0"
+        "incenteev/composer-parameter-handler": "^2.0",
+        "doctrine/doctrine-bundle": "^1.6",
+        "greenlion/php-sql-parser": "^4.1"
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",

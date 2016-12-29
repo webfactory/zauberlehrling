@@ -12,3 +12,13 @@ services:
 
     app.show_unused_composer_packages.task:
         class: AppBundle\ShowUnusedComposerPackages\Task
+
+    app.show_unused_tables.command:
+        class: AppBundle\ShowUnusedMySQLTables\Command
+        arguments: ["@app.show_unused_tables.task"]
+        tags:
+            - { name: console.command }
+
+    app.show_unused_tables.task:
+        class: AppBundle\ShowUnusedMySQLTables\Task
+        arguments: ["@doctrine.dbal.default_connection"]
