@@ -1,0 +1,8 @@
+{
+    "packages": [
+        {
+            "name": "author-1/package-1",
+            "version": "v1.0.0"
+        }
+    ]
+}

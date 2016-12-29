@@ -1,0 +1,9 @@
+{
+  "name": "webfactory/zauberlehrling-test",
+  "license": "MIT",
+  "type": "project",
+  "require": {
+    "author-1/package-1": "*",
+    "author-2/package-2": "*"
+  }
+}
