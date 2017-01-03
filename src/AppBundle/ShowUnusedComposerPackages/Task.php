@@ -17,6 +17,9 @@ use Composer\Package\PackageInterface;
  *
  * Deleting a requirement of 2nd or higher degree alone makes no sense, as it will still be required by a first degree
  * requirement and therefore be installed. Hence we concentrate on the first level requirements only.
+ *
+ * If the only logged use of a package is a *Bundle.php, it's probably only registered in the AppKernel and not really
+ * used, i.e. can be deleted.
  */
 final class Task
 {
@@ -28,12 +31,14 @@ final class Task
     /**
      * @param string $pathToComposerJson
      * @param string|null $pathToVendor
-     * @param string $usedFiles one used file per line
+     * @param string[] $usedFiles
      * @return PackageInterface[]
      */
-    public function getUnusedComposerPackages($pathToComposerJson, $pathToVendor, $usedFiles)
+    public function getUnusedComposerPackages($pathToComposerJson, $pathToVendor, array $usedFiles)
     {
         $unusedPackages = [];
+        $usedFiles = $this->cutDownToRelevantUsedFiles($usedFiles);
+
         $composer = Factory::create(new BufferIO(), $pathToComposerJson);
 
         $pathToVendor = $pathToVendor ?: $this->getDefaultPathToVendor($pathToComposerJson);
@@ -46,14 +51,29 @@ final class Task
             }
 
             $pathToPackageInstallation = realpath($this->getInstallPath($composer, $package));
-            if (strpos($usedFiles, $pathToPackageInstallation) !== false) {
-                continue;
+            $packageInstallationIsInUsedFiles = false;
+            foreach ($usedFiles as $usedFile) {
+                if (strpos($usedFile, $pathToPackageInstallation) !== false) {
+                    $packageInstallationIsInUsedFiles = true;
+                    break;
+                }
             }
 
-            $unusedPackages[] = $package;
+            if ($packageInstallationIsInUsedFiles === false) {
+                $unusedPackages[] = $package;
+            }
         }
 
         return $unusedPackages;
+    }
+
+    /**
+     * @param string[] $usedFiles
+     * @return string[]
+     */
+    private function cutDownToRelevantUsedFiles(array $usedFiles)
+    {
+        return array_filter($usedFiles, function ($usedFile) { return strpos($usedFile, 'Bundle.php') === false; });
     }
 
     /**

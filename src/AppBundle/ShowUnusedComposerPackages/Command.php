@@ -51,7 +51,7 @@ final class Command extends BaseCommand
         $potentiallyUnusedPackages = $this->task->getUnusedComposerPackages(
             $input->getArgument(self::ARGUMENT_COMPOSER_JSON),
             $input->getOption(self::OPTION_VENDOR_DIRECTORY),
-            file_get_contents($input->getArgument(self::ARGUMENT_USED_FILES))
+            file($input->getArgument(self::ARGUMENT_USED_FILES))
         );
 
         $output->writeln('Potentially unused packages:');
