@@ -1,25 +1,87 @@
 zauberlehrling
 ==============
 
-A collection of tools for splitting up a big monolithic PHP application in smaller parts, i.e. smaller applications and
-microservices:
-
-- a console command for identifying potentially unused Composer packages
-- a console command for identifying potentially unused MySQL tables
+A collection of tools and ideas for splitting up a big monolithic PHP application in smaller parts, i.e. smaller
+applications and microservices. It contains console commands for identifying potentially unused PHP files, Composer
+packages and MySQL tables.
 
 
 Installation
 ------------
 
-...
+    git clone ...
+    cd zauberlehrling
+    composer install
 
 
-Usage
------
+Splitting up the monolith
+-------------------------
+
+### Determine used PHP files
+
+To determine the used PHP files, I suggest writing black box tests for each use case of your application and collect the
+code coverage information during their execution.
+
+For the black box tests, e.g. you could write [behat](http://behat.org/) tests for
+ 
+* requesting the homepage
+* log in of a user
+* send a search form and retrieve results
+* create, edit an delete an entity
+* request a page without proper permissions
+* ...
+
+Now for the code coverage part. Most frameworks provide a frontcontroller, e.g. for Symfony it's
+```web/symfony-webapp.php```. If you have xdebug installed, you can write at the beginning of such a frontcontroller:
+
+    <?php
+    xdebug_start_code_coverage();
+
+and at it's end something like this:
+
+    <?php
+    $filePointer = fopen($outputFile, 'a');
+    foreach (array_keys(xdebug_get_code_coverage()) as $usedFileName) {
+        fwrite($filePointer, $usedFileName . PHP_EOL);
+    }
+    fclose($filePointer);
+
+Now, when you execute your behat tests, all executed files will be written to ```$outputFile```. I don't recommend
+executing your unit tests now, as these tests could cover code never used in production.  
+
+You can consolidate this file (removing duplicates and sort the file nameslist) with
+
+    bin/console consolidate-used-files usedFiles
+
+where the ```usedFiles``` argument is the path to the file containing the list of used files. It will be overwritten
+with it's consolidated version.
+
+
+### Unused PHP files
+
+    bin/console show-unused-php-files pathToInspect pathToIgnore usedFiles pathToOutput
+
+With these parameters:
+
+* pathToInspect: path to the directory to search for PHP files
+* pathToIgnore: path to ignore when searching for PHP files, e.g. a temp directory
+* usedFiles: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
+* pathToOutput: path to a file where the list of unused files should be dumped
+
 
 ### Unused Composer packages
 
-    bin/console show-unused-composer-packages
+    bin/console show-unused-composer-packages [--vendorDir=...] composerJson usedFiles
+
+With these parameters:
+
+* composerJson: path to the composer.json of the project to analyze 
+* usedFiles: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
+
+And this option:
+
+* vendorDir: path to the vendor directory of the project to analyze. Defaults to the directory of the composer.json + '/vendor'.
+
 
 ### Unused MySQL Tables
 
