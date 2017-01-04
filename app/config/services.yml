@@ -1,4 +1,13 @@
 services:
+    app.consolidate_used_files.command:
+        class: AppBundle\ConsolidateUsedFiles\Command
+        arguments: ["@app.consolidate_used_files.task"]
+        tags:
+            - { name: console.command }
+
+    app.consolidate_used_files.task:
+        class: AppBundle\ConsolidateUsedFiles\Task
+
     app.show_unused_php_files.command:
         class: AppBundle\ShowUnusedPhpFiles\Command
         arguments: ["@app.show_unused_php_files.task"]
