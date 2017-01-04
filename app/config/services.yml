@@ -1,9 +1,13 @@
-# Learn more about services, parameters and containers at
-# http://symfony.com/doc/current/service_container.html
-parameters:
-#    parameter_name: value
-
 services:
+    app.show_unused_php_files.command:
+        class: AppBundle\ShowUnusedPhpFiles\Command
+        arguments: ["@app.show_unused_php_files.task"]
+        tags:
+            - { name: console.command }
+
+    app.show_unused_php_files.task:
+        class: AppBundle\ShowUnusedPhpFiles\Task
+
     app.show_unused_composer_packages.command:
         class: AppBundle\ShowUnusedComposerPackages\Command
         arguments: ["@app.show_unused_composer_packages.task"]
