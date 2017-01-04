@@ -17,6 +17,19 @@ Installation
 Splitting up the monolith
 -------------------------
 
+### Your local development environment
+
+At this point, you probably know your monolith way to well. You've fixed devious bugs and if you're brave/ruthless
+enough, you might even have added a feature. So I guess you've set up your local development environment already.
+
+Just a tip: During the split, you might wish to do several dumps of your production database. Consider
+[slimdump](https://github.com/webfactory/slimdump) for storing configurations. These configurations are really handy,
+as they can be shared among your coworkers and provide neat features. E.g. you can ignore more and more tables that
+emerged to be irrelevant for your extracted application; you can also ignore BLOB columns or dump only rows matching
+certain conditions for speeding up the dump process. And you can easily anonymize personalized data to protect your
+customers.
+
+
 ### Determine used PHP files
 
 To determine the used PHP files, I suggest writing black box tests for each use case of your application and collect the
