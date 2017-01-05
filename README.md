@@ -18,6 +18,9 @@ Installation
     cd zauberlehrling
     composer install
 
+When asked for the database parameters, provide the information for your local database of the monolith. If your
+monolith has no database or you don't want any help with it, stay with the default parameters.
+
 
 Splitting up the monolith
 -------------------------
@@ -117,6 +120,24 @@ And this option:
 
 
 ### Unused MySQL Tables
+
+So, you've cloned your code base, and you have probably copied your database as well. How do you find the unused tables? 
+
+The idea is analogous to the code coverage. First, enable logging in MySQL and possibly delete old log date, e.g. with
+
+```mysql
+SET global general_log = 1;
+SET global log_output = 'table';
+TRUNCATE mysql.general_log;
+```
+
+Then execute your tests for all use cases of your application. Afterwards, you can disable MySQl logging with
+
+```mysql
+SET global general_log = 0;
+```
+
+Finally, call the following console command:
 
     bin/console show-unused-mysql-tables
 
