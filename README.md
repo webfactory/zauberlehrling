@@ -5,11 +5,16 @@ A collection of tools and ideas for splitting up a big monolithic PHP applicatio
 applications and microservices. It contains console commands for identifying potentially unused PHP files, Composer
 packages and MySQL tables.
 
+The name "zauberlehrling" derives from [the famous poem by Johann Wolfgang von Goethe](https://en.wikipedia.org/wiki/The_Sorcerer%27s_Apprentice)
+(you may have also seen the iconic cartoon "Fantasia" by Walt Disney). In these tales, a sorcerer's apprentice splits up
+a magical, out of control broom with an axe. Unfortunately for him, each piece has a life of it's own and only
+multiplies the problem.
+
 
 Installation
 ------------
 
-    git clone ...
+    git clone https://github.com/webfactory/zauberlehrling.git
     cd zauberlehrling
     composer install
 
