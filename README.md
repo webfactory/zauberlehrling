@@ -67,17 +67,17 @@ For the black box tests, e.g. you could write [behat](http://behat.org/) tests f
 Now for the code coverage part. Most frameworks provide a frontcontroller, e.g. for Symfony it's
 ```web/symfony-webapp.php```. If you have xdebug installed, you can write at the beginning of such a frontcontroller:
 
-    <?php
-    xdebug_start_code_coverage();
+```php
+xdebug_start_code_coverage();
+```
 
 and at it's end something like this:
 
-    <?php
-    $filePointer = fopen($outputFile, 'a');
-    foreach (array_keys(xdebug_get_code_coverage()) as $usedFileName) {
-        fwrite($filePointer, $usedFileName . PHP_EOL);
-    }
-    fclose($filePointer);
+```php
+$filePointer = fopen($outputFile, 'a');
+fwrite($filePointer, implode(PHP_EOL, array_keys(xdebug_get_code_coverage())));
+fclose($filePointer);
+```
 
 Now, when you execute your behat tests, all executed files will be written to ```$outputFile```. I don't recommend
 executing your unit tests now, as these tests could cover code never used in production.  
