@@ -35,6 +35,21 @@ certain conditions for speeding up the dump process. And you can easily anonymiz
 customers.
 
 
+### Greenfield or Brownfield?
+
+The answer to this question seems to depend mostly on the amount of code you want to reuse. If you know you want to
+replace e.g. an old integrated messaging system with a shiny new microservice (i.e. a partial rewrite of the monolith),
+you'll probably be fine with a greenfield project with your best and latest technology.
+
+But if you just want to split up the monolith and you're afraid of hidden dependencies inside different parts of the
+monolith, or if you want to keep down your effort and rewrite only what's necessary: my guess is you'll be better off
+with a brownfield project. Clone the monolith's repository to keep it's history of commit messages. I find it there is
+often much knowledge in these messages and linked ticket systems. Sometimes they're the only chance to get an
+understanding for the reasoning of a particular crazy piece of code.
+
+Then, ged rid of everything you don't need in your extracted application. The following chapters may help.
+
+
 ### Determine used PHP files
 
 To determine the used PHP files, I suggest writing black box tests for each use case of your application and collect the
