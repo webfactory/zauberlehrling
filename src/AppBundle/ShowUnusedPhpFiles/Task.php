@@ -10,16 +10,20 @@ use Symfony\Component\Finder\Finder;
 final class Task
 {
     /**
-     * @param string $pathToInspect
      * @param string $pathToIgnore
      * @param string[] $usedFiles
+     * @param string|null $pathToInspect
      * @return string[]
      * @throws \InvalidArgumentException
      */
-    public function getUnusedPhpFiles($pathToInspect, $pathToIgnore, $usedFiles)
+    public function getUnusedPhpFiles($pathToIgnore, $usedFiles, $pathToInspect)
     {
         if (count($usedFiles) === 0) {
             throw new \InvalidArgumentException('Empty list for used files');
+        }
+
+        if ($pathToInspect === null) {
+            $pathToInspect = $this->guessPathToInspect($usedFiles);
         }
 
         $existingPhpFiles = $this->getExistingPhpFiles($pathToInspect, $pathToIgnore);
@@ -27,6 +31,15 @@ final class Task
         sort($unusedPhpFiles);
 
         return $unusedPhpFiles;
+    }
+
+    /**
+     * @param string[] $usedFiles
+     * @return string
+     */
+    private function guessPathToInspect(array $usedFiles)
+    {
+        return (new CommonPathDeterminator())->determineCommonPath($usedFiles);
     }
 
     /**
