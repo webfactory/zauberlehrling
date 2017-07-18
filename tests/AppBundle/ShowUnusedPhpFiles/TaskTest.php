@@ -27,7 +27,11 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function unusedPhpFilesGetReported()
     {
-        $unusedFiles = $this->task->getUnusedPhpFiles(__DIR__ . '/fixtures', '/tmp', []);
+        $unusedFiles = $this->task->getUnusedPhpFiles(
+            __DIR__ . '/fixtures',
+            '/tmp',
+            [__DIR__ . '/fixtures/used/file.php']
+        );
 
         $this->assertContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
     }
@@ -54,7 +58,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $unusedFiles = $this->task->getUnusedPhpFiles(
             __DIR__ . '/fixtures/ignored',
             __DIR__ . '/fixtures/ignored',
-            []
+            [__DIR__ . '/fixtures/used/file.php']
         );
 
         $this->assertEmpty($unusedFiles);

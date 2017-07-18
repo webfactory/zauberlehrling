@@ -14,9 +14,14 @@ final class Task
      * @param string $pathToIgnore
      * @param string[] $usedFiles
      * @return string[]
+     * @throws \InvalidArgumentException
      */
     public function getUnusedPhpFiles($pathToInspect, $pathToIgnore, $usedFiles)
     {
+        if (count($usedFiles) === 0) {
+            throw new \InvalidArgumentException('Empty list for used files');
+        }
+
         $existingPhpFiles = $this->getExistingPhpFiles($pathToInspect, $pathToIgnore);
         $unusedPhpFiles = array_diff($existingPhpFiles, $usedFiles);
         sort($unusedPhpFiles);
@@ -46,6 +51,3 @@ final class Task
         return $existingPhpFiles;
     }
 }
-
-
-
