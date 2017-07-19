@@ -44,13 +44,17 @@ The answer to this question seems to depend mostly on the amount of code you wan
 replace e.g. an old integrated messaging system with a shiny new microservice (i.e. a partial rewrite of the monolith),
 you'll probably be fine with a greenfield project with your best and latest technology.
 
-But if you just want to split up the monolith and you're afraid of hidden dependencies inside different parts of the
-monolith, or if you want to keep down your effort and rewrite only what's necessary: my guess is you'll be better off
-with a brownfield project. Clone the monolith's repository to keep it's history of commit messages. I find it there is
-often much knowledge in these messages and linked ticket systems. Sometimes they're the only chance to get an
-understanding for the reasoning of a particular crazy piece of code.
+But if you just want to split up the monolith and you're afraid of hidden dependencies, or if you want to keep down your
+effort and rewrite only what's necessary: my guess is you'll be better off with a brownfield project. Clone the
+monolith's repository to keep it's history of commit messages. I find it there is often much knowledge in these messages
+and linked ticket systems. Sometimes they're the only chance to get an understanding for the reasoning of a particular
+crazy piece of code.
 
-Then, ged rid of everything you don't need in your extracted application. The following chapters may help.
+Then, get rid of everything you don't need in your extracted application. The following chapters may help.
+
+Also, my advice is to keep a separate local working copy of the monolith. Sooner or later you'll probably encounter an
+error you cannot pinpoint to one of your refactorings, or you notice you've deleted too much and you cannot restore it
+easily from your VCS. In this cases, you'll be happy to have a quick look into the working monolith. 
 
 
 ### Determine used PHP files
@@ -66,6 +70,14 @@ For the black box tests, e.g. you could write [behat](http://behat.org/) tests f
 * create, edit an delete an entity
 * request a page without proper permissions
 * ...
+
+Depending on your project you may want to assert different things. In my experience, the following assertions were often
+helpful: 
+
+* correct URL (i.e. the user is not being redirected e.g. due to authorization problems)
+* HTTP status code being 200 (i.e. the user got no fancy error page)
+* text content like "x was saved in the database" (to detect failures after form submission) - may seem brittle for a
+  test, but I don't expect that message to be changed while you're extracting your microservice.  
 
 Now for the code coverage part. Most frameworks provide a frontcontroller, e.g. for Symfony it's
 ```web/symfony-webapp.php```. If you have xdebug installed, you can write at the beginning of such a frontcontroller:
@@ -145,7 +157,7 @@ SET global log_output = 'table';
 TRUNCATE mysql.general_log;
 ```
 
-Then execute your tests for all use cases of your application. Afterwards, you can disable MySQl logging with
+Then execute your tests for all use cases of your application. Afterwards, you can disable MySQL logging with
 
 ```mysql
 SET global general_log = 0;
