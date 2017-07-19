@@ -32,9 +32,10 @@ final class Task
      * @param string $pathToComposerJson
      * @param string|null $pathToVendor
      * @param string[] $usedFiles
+     * @param string[] $blacklistRegExps
      * @return PackageInterface[]
      */
-    public function getUnusedComposerPackages($pathToComposerJson, $pathToVendor, array $usedFiles)
+    public function getUnusedComposerPackages($pathToComposerJson, $pathToVendor, array $usedFiles, array $blacklistRegExps)
     {
         $unusedPackages = [];
         $usedFiles = $this->cutDownToRelevantUsedFiles($usedFiles);
@@ -51,6 +52,13 @@ final class Task
             }
 
             $pathToPackageInstallation = realpath($this->getInstallPath($composer, $package));
+
+            foreach ($blacklistRegExps as $blacklistRegExp) {
+                if (preg_match($blacklistRegExp, $pathToPackageInstallation) === 1) {
+                    continue 2;
+                }
+            }
+
             $packageInstallationIsInUsedFiles = false;
             foreach ($usedFiles as $usedFile) {
                 if (strpos($usedFile, $pathToPackageInstallation) !== false) {
@@ -83,9 +91,7 @@ final class Task
     private function getDefaultPathToVendor($pathToComposerJson)
     {
         $projectRoot = realpath(dirname($pathToComposerJson));
-        $defaultPathToVendor = $projectRoot . '/vendor';
-
-        return $defaultPathToVendor;
+        return $projectRoot . '/vendor';
     }
 
     /**
@@ -106,9 +112,7 @@ final class Task
             throw new \InvalidArgumentException($message);
         }
 
-        $pathWithTrailingDirectorySeparator = rtrim($path, '/') . '/';
-
-        return $pathWithTrailingDirectorySeparator;
+        return rtrim($path, '/') . '/';
     }
 
     /**
@@ -122,8 +126,6 @@ final class Task
 
         $pathToPackageInstallationInZauberlehrling = $composer->getInstallationManager()->getInstallPath($package);
         $pathToPackageInstallationInProject = str_replace($pathToVendorInZauberlehrling, $this->pathToVendor, $pathToPackageInstallationInZauberlehrling);
-        $pathToPackageInstallation = realpath($pathToPackageInstallationInProject);
-
-        return $pathToPackageInstallation;
+        return realpath($pathToPackageInstallationInProject);
     }
 }

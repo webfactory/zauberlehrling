@@ -137,12 +137,13 @@ and these options:
 
 With these arguments:
 
-* composerJson: path to the composer.json of the project to analyze 
-* usedFiles: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
+* ```composerJson```: path to the composer.json of the project to analyze 
+* ```usedFiles```: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
 
-And this option:
+And these options:
 
-* vendorDir: path to the vendor directory of the project to analyze. Defaults to the directory of the composer.json + '/vendor'.
+* ```vendorDir```: path to the vendor directory of the project to analyze. Defaults to the directory of the composer.json + '/vendor'.
+* ```-b```, ```--pathToBlacklist``` Path to a file containing a blacklist of regular expressions to exclude from the output (see [Unused PHP files](#unused-php-files) for details).
 
 
 ### Unused Public Assets
@@ -182,27 +183,6 @@ SET global general_log = 0;
 Finally, call the following console command:
 
     bin/console show-unused-mysql-tables
-
-Auch hier wäre (optionale) whitelist-datei der tabellennamen interessant
-
-
-Keeping your friends close and your enemies closer
---------------------------------------------------
-
-### Authentication
-
-- keine gemeinsame Session, weil keine gesharte Infrastruktur
-- lokale User-Stubs, die aus User-Service im Monolithen gespeist werden
-- Authentifizierung über Cookie (Nelmio-gehasht und eigene Lifetime-Implementierung)
-- Anbindung an AWS SNS für Update/Delete-Messages vom Monolithen
-- Was steckt im microservice-authentication-bundle drin?
- 
-- Zur Entwicklung: Komponenten sollten isoliert entwickelt und getestet werden können! Mocks für externe Systeme wo und wie komplex? Einfach: Z.B. File in dem zu entwickelnden Projekt. Komplexer: Test-Schnittstelle im gemockten System, die nur lokal angesprochen werden kann.
-
-- Fake-Cookie-Emitter gebaut
-- Cookie-Leser (Bundle) eingebunden, User-Stub angelegt. Klar, dass es Probleme geben wird: andere User-Klasse/TypeHints, nicht alle Attribiute/Methoden, andere Session...
-- Nach und Nach behat-Tests zum Laufen gebracht und damit nötige Attribute erkannt / ale Sessions usw. umgeschrieben
-- noch einmal schauen, welcher Code nun überflüssig
 
 
 Credits, Copyright and License

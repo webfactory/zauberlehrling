@@ -35,7 +35,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(null);
 
-        $this->task->getUnusedComposerPackages($this->pathToComposerJson, null, []);
+        $this->task->getUnusedComposerPackages($this->pathToComposerJson, null, [], []);
     }
 
     /**
@@ -45,7 +45,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(\InvalidArgumentException::class);
 
-        $this->task->getUnusedComposerPackages($this->pathToComposerJson, 'invalid path', []);
+        $this->task->getUnusedComposerPackages($this->pathToComposerJson, 'invalid path', [], []);
     }
 
     /**
@@ -53,7 +53,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function potentiallyUnusedPackagesGetReported()
     {
-        $unusedPackages = $this->task->getUnusedComposerPackages($this->pathToComposerJson, null, []);
+        $unusedPackages = $this->task->getUnusedComposerPackages($this->pathToComposerJson, null, [], []);
 
         $this->assertCount(1, $unusedPackages);
         $this->assertEquals('author-1/package-1', $unusedPackages[0]->getName());
@@ -67,7 +67,8 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $unusedPackages = $this->task->getUnusedComposerPackages(
             $this->pathToComposerJson,
             null,
-            [__DIR__ . '/fixtures/vendor/author-1/package-1/file.txt']
+            [__DIR__ . '/fixtures/vendor/author-1/package-1/file.txt'],
+            []
         );
 
         $this->assertCount(0, $unusedPackages);
@@ -85,10 +86,26 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $unusedPackages = $this->task->getUnusedComposerPackages(
             $this->pathToComposerJson,
             null,
-            [__DIR__ . '/fixtures/vendor/author-1/package-1/Author1Package1Bundle.php']
+            [__DIR__ . '/fixtures/vendor/author-1/package-1/Author1Package1Bundle.php'],
+            []
         );
 
         $this->assertCount(1, $unusedPackages);
         $this->assertEquals('author-1/package-1', $unusedPackages[0]->getName());
+    }
+
+    /**
+     * @test
+     */
+    public function packageIsReportedIfItsNotBlacklisted()
+    {
+        $unusedPackages = $this->task->getUnusedComposerPackages(
+            $this->pathToComposerJson,
+            null,
+            [__DIR__ . '/fixtures/vendor/author-1/package-1/Author1Package1Bundle.php'],
+            ['#' . __DIR__ . '/fixtures/vendor/author-1/.*#']
+        );
+
+        $this->assertEmpty($unusedPackages);
     }
 }
