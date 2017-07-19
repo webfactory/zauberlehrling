@@ -15,8 +15,8 @@ final class Command extends BaseCommand
 {
     const ARGUMENT_PATH_TO_IGNORE = 'pathToIgnore';
     const ARGUMENT_USED_FILES = 'usedFiles';
-    const ARGUMENT_PATH_TO_OUTPUT = 'pathToOutput';
     const OPTION_PATH_TO_INSPECT = 'pathToInspect';
+    const OPTION_PATH_TO_OUTPUT = 'pathToOutput';
 
     /**
      * @var Task
@@ -41,8 +41,8 @@ final class Command extends BaseCommand
              ->setDescription('Show a list of potentially unused PHP files.')
              ->addArgument(self::ARGUMENT_PATH_TO_IGNORE, InputArgument::REQUIRED, 'Path to ignore, e.g. temp-directories.')
              ->addArgument(self::ARGUMENT_USED_FILES, InputArgument::REQUIRED, 'Path to the list of used files.')
-             ->addArgument(self::ARGUMENT_PATH_TO_OUTPUT, InputArgument::REQUIRED, 'Path to the output file.')
-             ->addOption(self::OPTION_PATH_TO_INSPECT, 'p', InputOption::VALUE_REQUIRED, 'Path to search for PHP files. If not set, it will be determined as the common parent path of the used files.', null);
+             ->addOption(self::OPTION_PATH_TO_INSPECT, 'p', InputOption::VALUE_REQUIRED, 'Path to search for PHP files. If not set, it will be determined as the common parent path of the used files.', null)
+             ->addOption(self::OPTION_PATH_TO_OUTPUT, 'o', InputOption::VALUE_REQUIRED, 'Path to the output file. If not set, it will be "potentially-unused-files.txt" next to the file named in the usedFiles argument.', null);
     }
 
     /**
@@ -50,8 +50,7 @@ final class Command extends BaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $originalPathToOutput = $input->getArgument(self::ARGUMENT_PATH_TO_OUTPUT);
-        $pathToOutput = realpath(dirname($originalPathToOutput)) . '/' . basename($originalPathToOutput);
+        $pathToOutput = $this->getPathToOutput($input);
 
         $output->writeln('Writing list of unused PHP files to ' . $pathToOutput);
 
@@ -86,5 +85,20 @@ final class Command extends BaseCommand
         fwrite($handle, implode(PHP_EOL, $unusedPhpFiles));
 
         fclose($handle);
+    }
+
+    /**
+     * @param InputInterface $input
+     * @return string
+     */
+    private function getPathToOutput(InputInterface $input)
+    {
+        $pathToOutput = $input->getOption(self::OPTION_PATH_TO_OUTPUT);
+
+        if ($pathToOutput !== null) {
+            return realpath(dirname($pathToOutput)) . '/' . basename($pathToOutput);
+        }
+
+        return realpath(dirname($input->getArgument(self::ARGUMENT_USED_FILES))) . '/potentially-unused-files.txt';
     }
 }

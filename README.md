@@ -95,14 +95,14 @@ with it's consolidated version.
 
 ### Unused PHP files
 
-    bin/console show-unused-php-files [--pathToInspect=...] pathToIgnore usedFiles pathToOutput
+    bin/console show-unused-php-files [--pathToInspect=...] [--pathToOutput=...] pathToIgnore usedFiles
 
 With these options and arguments:
 
 * -p, --pathToInspect: path to the directory to search for PHP files. If not set, it will be determined as the common parent path of the used files.
+* -o, --pathToOutput: Path to the output file. If not set, it will be "potentially-unused-files.txt" next to the file named in the usedFiles argument.
 * pathToIgnore: path to ignore when searching for PHP files, e.g. a temp directory
 * usedFiles: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
-* pathToOutput: path to a file where the list of unused files should be dumped
 
 
 ### Unused Composer packages
