@@ -28,9 +28,9 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     public function unusedPhpFilesGetReported()
     {
         $unusedFiles = $this->task->getUnusedPhpFiles(
-            '/tmp',
             [__DIR__ . '/fixtures/used/file.php'],
-            __DIR__ . '/fixtures'
+            __DIR__ . '/fixtures',
+            []
         );
 
         $this->assertContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
@@ -42,9 +42,9 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     public function usedPhpFilesDontGetReported()
     {
         $unusedFiles = $this->task->getUnusedPhpFiles(
-            '/tmp',
             [__DIR__ . '/fixtures/file.php'],
-            __DIR__ . '/fixtures'
+            __DIR__ . '/fixtures',
+            []
         );
 
         $this->assertNotContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
@@ -56,9 +56,9 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     public function unusedPhpFilesInIgnoredPathDontGetReported()
     {
         $unusedFiles = $this->task->getUnusedPhpFiles(
-            __DIR__ . '/fixtures/ignored',
             [__DIR__ . '/fixtures/used/file.php'],
-            __DIR__ . '/fixtures/ignored'
+            __DIR__ . '/fixtures/ignored',
+            ['#/tmp/.*#', '#' . __DIR__ . '/fixtures/ignored/.*#']
         );
 
         $this->assertEmpty($unusedFiles);
@@ -70,9 +70,9 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     public function pathToInspectCanBeGuessedFromUsedFiles()
     {
         $unusedFiles = $this->task->getUnusedPhpFiles(
-            __DIR__ . '/fixtures/ignored',
             [__DIR__ . '/fixtures/used/file.php', __DIR__ . '/fixtures/virtual-used-file.php'],
-            null
+            null,
+            ['#' . __DIR__ . '/fixtures/ignored/.*#']
         );
 
         $this->assertCount(1, $unusedFiles);

@@ -10,13 +10,13 @@ use Symfony\Component\Finder\Finder;
 final class Task
 {
     /**
-     * @param string $pathToIgnore
      * @param string[] $usedFiles
      * @param string|null $pathToInspect
+     * @param string[] $blacklistedPathTemplates
      * @return string[]
      * @throws \InvalidArgumentException
      */
-    public function getUnusedPhpFiles($pathToIgnore, $usedFiles, $pathToInspect)
+    public function getUnusedPhpFiles($usedFiles, $pathToInspect, $blacklistedPathTemplates)
     {
         if (count($usedFiles) === 0) {
             throw new \InvalidArgumentException('Empty list for used files');
@@ -26,8 +26,8 @@ final class Task
             $pathToInspect = $this->guessPathToInspect($usedFiles);
         }
 
-        $existingPhpFiles = $this->getExistingPhpFiles($pathToInspect, $pathToIgnore);
-        $unusedPhpFiles = array_diff($existingPhpFiles, $usedFiles);
+        $existingRelevantPhpFiles = $this->getExistingRelevantPhpFiles($pathToInspect, $blacklistedPathTemplates);
+        $unusedPhpFiles = array_diff($existingRelevantPhpFiles, $usedFiles);
         sort($unusedPhpFiles);
 
         return $unusedPhpFiles;
@@ -44,18 +44,19 @@ final class Task
 
     /**
      * @param string $pathToInspect
-     * @param string $pathToIgnore
+     * @param string[] $blacklistedPathTemplates
      * @return string[]
      */
-    private function getExistingPhpFiles($pathToInspect, $pathToIgnore)
+    private function getExistingRelevantPhpFiles($pathToInspect, array $blacklistedPathTemplates)
     {
         $existingPhpFiles = [];
 
-        $finder = new Finder();
-        foreach ($finder->in($pathToInspect)->files()->name('*.php') as $foundFileInfo) {
+        foreach ((new Finder())->in($pathToInspect)->files()->name('*.php')->getIterator() as $foundFileInfo) {
             /** @var $foundFileInfo \Symfony\Component\Finder\SplFileInfo */
-            if (strpos($foundFileInfo->getRealPath(), $pathToIgnore) === 0) {
-                continue;
+            foreach ($blacklistedPathTemplates as $blacklistedPathTemplate) {
+                if (preg_match($blacklistedPathTemplate, $foundFileInfo->getRealPath()) === 1) {
+                    continue 2;
+                }
             }
 
             $existingPhpFiles[] = $foundFileInfo->getRealPath();

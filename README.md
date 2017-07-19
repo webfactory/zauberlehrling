@@ -95,14 +95,28 @@ with it's consolidated version.
 
 ### Unused PHP files
 
-    bin/console show-unused-php-files [--pathToInspect=...] [--pathToOutput=...] pathToIgnore usedFiles
+    bin/console show-unused-php-files [--pathToInspect=...] [--pathToOutput=...] [--pathToBlacklist=...] usedFiles
 
-With these options and arguments:
+With this argument:
 
-* -p, --pathToInspect: path to the directory to search for PHP files. If not set, it will be determined as the common parent path of the used files.
-* -o, --pathToOutput: Path to the output file. If not set, it will be "potentially-unused-files.txt" next to the file named in the usedFiles argument.
-* pathToIgnore: path to ignore when searching for PHP files, e.g. a temp directory
-* usedFiles: path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
+* ```usedFiles```: Path to a file containing the list of used files (see [Determine used PHP files](#determine-used-php-files))
+
+and these options:
+
+* ```-p```, ```--pathToInspect```: Path to the directory to search for PHP files. If not set, it will be determined as
+  the common parent path of the used files.
+* ```-o```, ```--pathToOutput```: Path to the output file. If not set, it will be "potentially-unused-files.txt" next to
+  the file named in the usedFiles argument.
+* ```-b```, ```--pathToBlacklist```: Path to a file containing a blacklist of regular expressions to exclude from the
+  output. The blacklist may grow over time. At first, you might want to exclude temp directories and libraries. But as
+  you inspect the list of potentially unused files, you may notice some file definitely needed by your application,
+  although the usage is not detected by your tests. You can persist such insights in this blacklist.
+   
+  The file should contain one regular expression per line, e.g.:
+ 
+      #/var/www/my-project/tmp/.*# 
+      #/var/www/my-project/vendor/.*# 
+      #/var/www/my-project/file-only-used-in-production-environment.php# 
 
 
 ### Unused Composer packages
