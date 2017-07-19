@@ -19,7 +19,7 @@ final class Task
      */
     public function getUnusedPublicAssets($pathToPublic, array $logEntries, $regExpToFindFile, array $blacklistRegExps)
     {
-        $relevantPublicAssets = $this->getPublicAssets($pathToPublic, $blacklistRegExps);
+        $relevantPublicAssets = $this->getRelevantPublicAssets($pathToPublic, $blacklistRegExps);
         $usedAssets = $this->getUsedAssets($pathToPublic, $logEntries, $regExpToFindFile);
 
         return array_diff($relevantPublicAssets, $usedAssets);
@@ -30,7 +30,7 @@ final class Task
      * @param string[] $blacklistRegExps
      * @return string[]
      */
-    private function getPublicAssets($pathToPublic, array $blacklistRegExps)
+    private function getRelevantPublicAssets($pathToPublic, array $blacklistRegExps)
     {
         $existingAssets = [];
 
