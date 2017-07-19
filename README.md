@@ -89,7 +89,7 @@ xdebug_start_code_coverage();
 and at it's end something like this:
 
 ```php
-$filePointer = fopen($outputFile, 'a');
+$filePointer = fopen($outputFile, 'ab');
 fwrite($filePointer, implode(PHP_EOL, array_keys(xdebug_get_code_coverage())));
 fclose($filePointer);
 ```
