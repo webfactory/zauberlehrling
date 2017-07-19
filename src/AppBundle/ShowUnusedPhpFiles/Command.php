@@ -52,13 +52,13 @@ final class Command extends BaseCommand
     {
         $pathToOutput = $this->getPathToOutput($input);
 
-        $output->writeln('Writing list of unused PHP files to ' . $pathToOutput);
+        $output->writeln('Writing list of potentially unused PHP files to ' . $pathToOutput);
 
         $this->writeUnusedPhpFilesToOutputFile($input, $pathToOutput);
 
         $output->writeln('Finished.');
         $output->writeln('');
-        $output->writeln('Now you may want to inspect the output file and delete the lines with files you want to keep although they don\'t seem to be used.');
+        $output->writeln('Now you may want to inspect the output file and transfer the lines with PHP files you want to keep (although they don\'t seem to be used) to a blacklist file for further runs.');
         $output->writeln('Finally, you may want to do delete the remaining listed files, e.g. with:');
         $output->writeln('');
         $output->writeln('xargs rm < ' . $pathToOutput);
@@ -112,6 +112,6 @@ final class Command extends BaseCommand
             return [];
         }
 
-        return file($input->getArgument($pathToBlacklist), FILE_IGNORE_NEW_LINES);
+        return file($pathToBlacklist, FILE_IGNORE_NEW_LINES);
     }
 }
