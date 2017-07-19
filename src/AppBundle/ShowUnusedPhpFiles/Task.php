@@ -12,11 +12,11 @@ final class Task
     /**
      * @param string[] $usedFiles
      * @param string|null $pathToInspect
-     * @param string[] $blacklistedPathTemplates
+     * @param string[] $blacklistRegExps
      * @return string[]
      * @throws \InvalidArgumentException
      */
-    public function getUnusedPhpFiles($usedFiles, $pathToInspect, $blacklistedPathTemplates)
+    public function getUnusedPhpFiles(array $usedFiles, $pathToInspect, array $blacklistRegExps)
     {
         if (count($usedFiles) === 0) {
             throw new \InvalidArgumentException('Empty list for used files');
@@ -26,7 +26,7 @@ final class Task
             $pathToInspect = $this->guessPathToInspect($usedFiles);
         }
 
-        $existingRelevantPhpFiles = $this->getExistingRelevantPhpFiles($pathToInspect, $blacklistedPathTemplates);
+        $existingRelevantPhpFiles = $this->getExistingRelevantPhpFiles($pathToInspect, $blacklistRegExps);
         $unusedPhpFiles = array_diff($existingRelevantPhpFiles, $usedFiles);
         sort($unusedPhpFiles);
 
@@ -44,17 +44,17 @@ final class Task
 
     /**
      * @param string $pathToInspect
-     * @param string[] $blacklistedPathTemplates
+     * @param string[] $blacklistRegExps
      * @return string[]
      */
-    private function getExistingRelevantPhpFiles($pathToInspect, array $blacklistedPathTemplates)
+    private function getExistingRelevantPhpFiles($pathToInspect, array $blacklistRegExps)
     {
         $existingPhpFiles = [];
 
         foreach ((new Finder())->in($pathToInspect)->files()->name('*.php')->getIterator() as $foundFileInfo) {
             /** @var $foundFileInfo \Symfony\Component\Finder\SplFileInfo */
-            foreach ($blacklistedPathTemplates as $blacklistedPathTemplate) {
-                if (preg_match($blacklistedPathTemplate, $foundFileInfo->getRealPath()) === 1) {
+            foreach ($blacklistRegExps as $blacklistRegExp) {
+                if (preg_match($blacklistRegExp, $foundFileInfo->getRealPath()) === 1) {
                     continue 2;
                 }
             }
