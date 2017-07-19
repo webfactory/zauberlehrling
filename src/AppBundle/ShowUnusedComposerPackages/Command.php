@@ -40,7 +40,7 @@ final class Command extends BaseCommand
         $this->setName('show-unused-composer-packages')
              ->setDescription('Show a list of potentially unused composer packages.')
              ->addArgument(self::ARGUMENT_COMPOSER_JSON, InputArgument::REQUIRED, 'Path to the project\'s composer.json.')
-             ->addOption(self::OPTION_VENDOR_DIRECTORY, null, InputOption::VALUE_REQUIRED, 'Path to the project\'s vendor directory.', null)
+             ->addOption(self::OPTION_VENDOR_DIRECTORY, 'l', InputOption::VALUE_REQUIRED, 'Path to the project\'s vendor directory.', null)
              ->addArgument(self::ARGUMENT_USED_FILES, InputArgument::REQUIRED, 'Path to the list of used files.')
              ->addOption(self::OPTION_PATH_TO_BLACKLIST, 'b', InputOption::VALUE_REQUIRED, 'Path to a file containing a blacklist of regular expressions to exclude from the output.');
     }
@@ -50,7 +50,7 @@ final class Command extends BaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $potentiallyUnusedPackages = $this->task->getUnusedComposerPackages(
+        $unusedPackagePaths = $this->task->getUnusedPackagePaths(
             $input->getArgument(self::ARGUMENT_COMPOSER_JSON),
             $input->getOption(self::OPTION_VENDOR_DIRECTORY),
             file($input->getArgument(self::ARGUMENT_USED_FILES)),
@@ -59,8 +59,8 @@ final class Command extends BaseCommand
 
         $output->writeln('Potentially unused packages:');
         $output->writeln('');
-        foreach ($potentiallyUnusedPackages as $potentiallyUnusedPackage) {
-            $output->writeln($potentiallyUnusedPackage->getName());
+        foreach ($unusedPackagePaths as $unusedPackagePath) {
+            $output->writeln($unusedPackagePath);
         }
         $output->writeln('');
     }

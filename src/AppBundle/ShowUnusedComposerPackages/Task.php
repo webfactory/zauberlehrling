@@ -33,53 +33,30 @@ final class Task
      * @param string|null $pathToVendor
      * @param string[] $usedFiles
      * @param string[] $blacklistRegExps
-     * @return PackageInterface[]
+     * @return string[]
      */
-    public function getUnusedComposerPackages($pathToComposerJson, $pathToVendor, array $usedFiles, array $blacklistRegExps)
+    public function getUnusedPackagePaths($pathToComposerJson, $pathToVendor, array $usedFiles, array $blacklistRegExps)
     {
-        $unusedPackages = [];
-        $usedFiles = $this->cutDownToRelevantUsedFiles($usedFiles);
-
-        $composer = Factory::create(new BufferIO(), $pathToComposerJson);
+        $unusedPackagePaths = [];
+        $usedFiles = $this->getRelevantUsedFiles($usedFiles);
 
         $pathToVendor = $pathToVendor ?: $this->getDefaultPathToVendor($pathToComposerJson);
         $this->pathToVendor = $this->assertPathToVendorIsValid($pathToVendor);
 
-        foreach ($composer->getPackage()->getRequires() as $link) {
-            $package = $composer->getLocker()->getLockedRepository()->findPackage($link->getTarget(), $link->getConstraint());
-            if ($package === null) {
-                continue;
-            }
-
-            $pathToPackageInstallation = realpath($this->getInstallPath($composer, $package));
-
-            foreach ($blacklistRegExps as $blacklistRegExp) {
-                if (preg_match($blacklistRegExp, $pathToPackageInstallation) === 1) {
-                    continue 2;
-                }
-            }
-
-            $packageInstallationIsInUsedFiles = false;
-            foreach ($usedFiles as $usedFile) {
-                if (strpos($usedFile, $pathToPackageInstallation) !== false) {
-                    $packageInstallationIsInUsedFiles = true;
-                    break;
-                }
-            }
-
-            if ($packageInstallationIsInUsedFiles === false) {
-                $unusedPackages[] = $package;
+        foreach ($this->getRelevantPackagePaths($pathToComposerJson, $blacklistRegExps) as $packagePath) {
+            if (!$this->atLeastOneFileIsInPath($usedFiles, $packagePath)) {
+                $unusedPackagePaths[] = $packagePath;
             }
         }
 
-        return $unusedPackages;
+        return $unusedPackagePaths;
     }
 
     /**
      * @param string[] $usedFiles
      * @return string[]
      */
-    private function cutDownToRelevantUsedFiles(array $usedFiles)
+    private function getRelevantUsedFiles(array $usedFiles)
     {
         return array_filter($usedFiles, function ($usedFile) { return strpos($usedFile, 'Bundle.php') === false; });
     }
@@ -116,6 +93,49 @@ final class Task
     }
 
     /**
+     * @param string $pathToComposerJson
+     * @param string[] $blacklistRegExps
+     * @return string[]
+     */
+    private function getRelevantPackagePaths($pathToComposerJson, array $blacklistRegExps)
+    {
+        $packagePaths = [];
+        $composer = Factory::create(new BufferIO(), $pathToComposerJson);
+
+        foreach ($composer->getPackage()->getRequires() as $link) {
+            $package = $composer->getLocker()->getLockedRepository()->findPackage($link->getTarget(), $link->getConstraint());
+            if ($package === null) {
+                continue;
+            }
+
+            $packagePath = realpath($this->getInstallPath($composer, $package));
+            if ($this->packagePathIsBlacklisted($packagePath, $blacklistRegExps)) {
+                continue;
+            }
+
+            $packagePaths[] = $packagePath;
+        }
+
+        return $packagePaths;
+    }
+
+    /**
+     * @param string[] $files
+     * @param string $path
+     * @return bool
+     */
+    private function atLeastOneFileIsInPath(array $files, $path)
+    {
+        foreach ($files as $file) {
+            if (strpos($file, $path) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param Composer $composer
      * @param PackageInterface $package
      * @return string
@@ -127,5 +147,21 @@ final class Task
         $pathToPackageInstallationInZauberlehrling = $composer->getInstallationManager()->getInstallPath($package);
         $pathToPackageInstallationInProject = str_replace($pathToVendorInZauberlehrling, $this->pathToVendor, $pathToPackageInstallationInZauberlehrling);
         return realpath($pathToPackageInstallationInProject);
+    }
+
+    /**
+     * @param string $path
+     * @param string[] $blacklistRegExps
+     * @return bool
+     */
+    private function packagePathIsBlacklisted($path, array $blacklistRegExps)
+    {
+        foreach ($blacklistRegExps as $blacklistRegExp) {
+            if (preg_match($blacklistRegExp, $path) === 1 || preg_match($blacklistRegExp, $path . '/') === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

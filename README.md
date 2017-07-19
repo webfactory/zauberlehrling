@@ -142,7 +142,7 @@ With these arguments:
 
 And these options:
 
-* ```vendorDir```: path to the vendor directory of the project to analyze. Defaults to the directory of the composer.json + '/vendor'.
+* ```-l```, ```vendorDir```: path to the vendor directory of the project to analyze. Defaults to the directory of the composer.json + '/vendor'.
 * ```-b```, ```--pathToBlacklist``` Path to a file containing a blacklist of regular expressions to exclude from the output (see [Unused PHP files](#unused-php-files) for details).
 
 
