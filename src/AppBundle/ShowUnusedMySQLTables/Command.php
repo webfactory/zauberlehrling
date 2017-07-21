@@ -2,29 +2,15 @@
 
 namespace AppBundle\ShowUnusedMySQLTables;
 
-use Symfony\Component\Console\Command\Command as BaseCommand;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Symfony-Console-Command wrapper for the ShowUnusedMySQLTables task.
  */
-final class Command extends BaseCommand
+final class Command extends ContainerAwareCommand
 {
-    /**
-     * @var Task
-     */
-    private $task;
-
-    /**
-     * @param Task $task
-     */
-    public function __construct(Task $task)
-    {
-        parent::__construct();
-        $this->task = $task;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -42,7 +28,8 @@ final class Command extends BaseCommand
         $output->writeln('Potentially unused MySQL tables (this may take a while):');
         $output->writeln('');
 
-        foreach ($this->task->getUnusedTableNames() as $potentiallyUnusedTableName) {
+        $task = new Task($this->getContainer()->get('doctrine.dbal.connection'));
+        foreach ($task->getUnusedTableNames() as $potentiallyUnusedTableName) {
             $output->writeln($potentiallyUnusedTableName);
         }
 

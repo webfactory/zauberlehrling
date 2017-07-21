@@ -37,10 +37,6 @@ services:
 
     app.show_unused_tables.command:
         class: AppBundle\ShowUnusedMySQLTables\Command
-        arguments: ["@app.show_unused_tables.task"]
+        arguments: []
         tags:
             - { name: console.command }
-
-    app.show_unused_tables.task:
-        class: AppBundle\ShowUnusedMySQLTables\Task
-        arguments: ["@doctrine.dbal.default_connection"]
