@@ -1,6 +1,8 @@
 zauberlehrling
 ==============
 
+[![Build Status](https://travis-ci.org/webfactory/zauberlehrling.svg?branch=master)](https://travis-ci.org/webfactory/zauberlehrling)
+
 A collection of tools and ideas for splitting up a big monolithic PHP application in smaller parts, i.e. smaller
 applications and microservices. It contains console commands for identifying potentially unused PHP files, Composer
 packages and MySQL tables.
