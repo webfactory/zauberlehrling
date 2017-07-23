@@ -28,7 +28,7 @@ final class Command extends ContainerAwareCommand
         $output->writeln('Potentially unused MySQL tables (this may take a while):');
         $output->writeln('');
 
-        $task = new Task($this->getContainer()->get('doctrine.dbal.connection'));
+        $task = new Task($this->getContainer()->get('doctrine.dbal.default_connection'));
         foreach ($task->getUnusedTableNames() as $potentiallyUnusedTableName) {
             $output->writeln($potentiallyUnusedTableName);
         }
