@@ -5,7 +5,7 @@ zauberlehrling
 
 A collection of tools and ideas for splitting up a big monolithic PHP application in smaller parts, i.e. smaller
 applications and microservices. It contains console commands for identifying potentially unused PHP files, Composer
-packages and MySQL tables.
+packages, MySQL tables and public web assets.
 
 The name "zauberlehrling" derives from [the famous poem by Johann Wolfgang von Goethe](https://en.wikipedia.org/wiki/The_Sorcerer%27s_Apprentice)
 (you may have also seen the iconic cartoon "Fantasia" by Walt Disney). In these tales, a sorcerer's apprentice splits up
