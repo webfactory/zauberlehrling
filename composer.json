@@ -48,7 +48,8 @@
         "symfony/stopwatch": "3.2.*",
         "symfony/translation": "3.2.*",
         "symfony/var-dumper": "3.2.*",
-        "symfony/yaml": "3.2.*"
+        "symfony/yaml": "3.2.*",
+        "roave/security-advisories": "dev-master"
     },
     "require-dev": {
         "composer/composer": "^1.2",
