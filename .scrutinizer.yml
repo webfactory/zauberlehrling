@@ -1,0 +1,18 @@
+checks:
+    php: true
+
+filter:
+    paths:
+        - src/*
+
+build:
+    environment:
+        php:
+            version: 5.6
+    tests:
+        override:
+            -
+                command: 'vendor/bin/phpunit --coverage-clover=clover.xml'
+                coverage:
+                    file: 'clover.xml'
+                    format: 'clover'
