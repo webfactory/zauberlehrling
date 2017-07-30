@@ -32,9 +32,9 @@ final class CommonPathDeterminatorTest extends \PHPUnit_Framework_TestCase
      */
     public function returnsCommonPath()
     {
-        $result = (new CommonPathDeterminator())->determineCommonPath(['/var/a', '/var/b']);
+        $result = (new CommonPathDeterminator())->determineCommonPath([__DIR__ . '/fixtures/ignored', __DIR__ . '/fixtures/used']);
         $this->assertInternalType('string', $result);
-        $this->assertEquals('/var', $result);
+        $this->assertEquals(__DIR__ . '/fixtures', $result);
     }
 
     /**
@@ -42,8 +42,8 @@ final class CommonPathDeterminatorTest extends \PHPUnit_Framework_TestCase
      */
     public function returnsCommonPathAndIsNotTrickedByCommonFileName()
     {
-        $result = (new CommonPathDeterminator())->determineCommonPath(['/var/common-1', '/var/common-2']);
+        $result = (new CommonPathDeterminator())->determineCommonPath([__DIR__ . '/fixtures/common-1', __DIR__ . '/fixtures/common-2']);
         $this->assertInternalType('string', $result);
-        $this->assertEquals('/var', $result);
+        $this->assertEquals(__DIR__ . '/fixtures', $result);
     }
 }
