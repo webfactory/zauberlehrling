@@ -2,6 +2,7 @@
 
 namespace AppBundle\ConsolidateUsedFiles;
 
+use Helper\FileSystem;
 use Helper\NullStyle;
 use Symfony\Component\Console\Style\StyleInterface;
 
@@ -11,28 +12,34 @@ use Symfony\Component\Console\Style\StyleInterface;
 final class Task
 {
     /**
-     * @param string $pathToUsedFiles
+     * @param string $userProvidedPathToConsolidate
      * @param StyleInterface|null $ioStyle
      */
-    public function consolidate($pathToUsedFiles, StyleInterface $ioStyle = null)
+    public function consolidate($userProvidedPathToConsolidate, StyleInterface $ioStyle = null)
     {
         if ($ioStyle === null) {
             $ioStyle = new NullStyle();
         }
         $ioStyle->progressStart(4);
 
-        $usedFiles = file($pathToUsedFiles, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $pathToConsolidate = FileSystem::getRealPathToReadableAndWritableFile($userProvidedPathToConsolidate);
+        if (!$pathToConsolidate) {
+            $message = $userProvidedPathToConsolidate . ' has to be a file both readable and writable.';
+            $ioStyle->error($message);
+            throw new \InvalidArgumentException($message);
+        }
+        $ioStyle->progressAdvance();
+
+        $usedFiles = FileSystem::readFileIntoArray($pathToConsolidate);
         $ioStyle->progressAdvance();
 
         $usedFiles = array_unique($usedFiles);
-        $ioStyle->progressAdvance();
-
         sort($usedFiles);
         $ioStyle->progressAdvance();
 
-        $handle = fopen($pathToUsedFiles, 'wb');
-        fwrite($handle, implode(PHP_EOL, $usedFiles));
-        fclose($handle);
+        FileSystem::writeArrayToFile($usedFiles, $pathToConsolidate);
         $ioStyle->progressFinish();
+
+        $ioStyle->success('Finished consolidating ' . $pathToConsolidate);
     }
 }

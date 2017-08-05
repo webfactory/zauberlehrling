@@ -44,17 +44,9 @@ final class Command extends BaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $originalPathToUsedFiles = $input->getArgument(self::ARGUMENT_USED_FILES);
-        $pathToUsedFiles = realpath(dirname($originalPathToUsedFiles)) . '/' . basename($originalPathToUsedFiles);
-        $ioStyle = new SymfonyStyle($input, $output);
-
-        if (!is_readable($pathToUsedFiles) || !is_writable($pathToUsedFiles)) {
-            $ioStyle->error($pathToUsedFiles . ' has to be a file both readable and writable to consolidate it.');
-            return;
-        }
-
-        $this->task->consolidate($pathToUsedFiles, $ioStyle);
-
-        $ioStyle->success('Finished consolidating ' . $pathToUsedFiles);
+        $this->task->consolidate(
+            $input->getArgument(self::ARGUMENT_USED_FILES),
+            new SymfonyStyle($input, $output)
+        );
     }
 }
