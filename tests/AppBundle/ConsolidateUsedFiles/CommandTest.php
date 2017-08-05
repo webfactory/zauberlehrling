@@ -102,7 +102,9 @@ final class CommandTest extends KernelTestCase
         // make file not readable (it's not checked in that way since git couldn't read it that way).
         $pathToWritableButNotReadableFixture = __DIR__ . '/fixtures/writable-but-not-readable-file.txt';
         $originalRights = fileperms($pathToWritableButNotReadableFixture);
-        chmod($pathToWritableButNotReadableFixture, 0200);
+        if (chmod($pathToWritableButNotReadableFixture, 0200) === false) {
+            $this->markTestSkipped('Test system does not support chmod\'ing 200.');
+        }
 
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
