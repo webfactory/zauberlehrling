@@ -84,10 +84,20 @@ final class CommandTest extends KernelTestCase
      */
     public function nonWritableFileGivesError()
     {
+        // make file not readable (it's not checked in that way since git couldn't read it that way).
+        $pathToReadableButNotWritableFixture = __DIR__ . '/fixtures/readable-but-not-writable-file.txt';
+        $originalRights = fileperms($pathToReadableButNotWritableFixture);
+        if (chmod($pathToReadableButNotWritableFixture, 0400) === false) {
+            $this->markTestSkipped('Test system does not support chmod\'ing 400.');
+        }
+
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
-            'usedFiles' => __DIR__ . '/fixtures/readable-but-not-writable-file.txt',
+            'usedFiles' => $pathToReadableButNotWritableFixture,
         ]);
+
+        // restore original rights so git does not recognise a modification
+        chmod($pathToReadableButNotWritableFixture, $originalRights);
 
         $output = $this->commandTester->getDisplay();
         $this->assertContains('[ERROR]', $output);
