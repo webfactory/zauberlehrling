@@ -17,10 +17,6 @@ final class Task
         sort($usedFiles);
 
         $handle = fopen($pathToUsedFiles, 'wb');
-        if ($handle === false) {
-            throw new \InvalidArgumentException($pathToUsedFiles . ' is not writeable');
-        }
-
         fwrite($handle, implode(PHP_EOL, $usedFiles));
         fclose($handle);
     }
