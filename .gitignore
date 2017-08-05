@@ -15,3 +15,5 @@
 /vendor/
 /web/bundles/
 /composer.phar
+/tests/AppBundle/ConsolidateUsedFiles/fixtures/files-to-consolidate.txt
+/tests/AppBundle/ConsolidateUsedFiles/fixtures/writable-but-not-readable-file.txt
