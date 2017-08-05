@@ -20,6 +20,9 @@ final class CommandTest extends KernelTestCase
     /** @var string */
     private $pathToFixture;
 
+    /**
+     * @see \PHPUnit_Framework_TestCase::setUp()
+     */
     protected function setUp()
     {
         // set up command tester
@@ -29,7 +32,17 @@ final class CommandTest extends KernelTestCase
         $this->command = $application->find('consolidate-used-files');
         $this->commandTester = new CommandTester($this->command);
 
-        $this->pathToFixture = __DIR__ . '/fixtures/files-to-consolidate.txt';
+        $this->pathToFixture = __DIR__ . '/fixtures/tmp-file-for-testing.txt';
+        copy(__DIR__ . '/fixtures/template-to-copy.txt', $this->pathToFixture);
+    }
+
+    /**
+     * @see \PHPUnit_Framework_TestCase::tearDown()
+     */
+    protected function tearDown()
+    {
+        unlink($this->pathToFixture);
+        parent::tearDown();
     }
 
     /**
@@ -51,16 +64,13 @@ final class CommandTest extends KernelTestCase
      */
     public function fileGetsConsolidated()
     {
-        // set up fixture
-        file_put_contents($this->pathToFixture, implode(PHP_EOL, ['b', 'a', 'a']));
-
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
             'usedFiles' => $this->pathToFixture,
         ]);
 
         $result = file($this->pathToFixture, FILE_IGNORE_NEW_LINES);
-        $this->assertEquals(['a', 'b'], $result);
+        $this->assertEquals(['a', 'b', 'c', 'e', 'g'], $result);
     }
 
     /**
