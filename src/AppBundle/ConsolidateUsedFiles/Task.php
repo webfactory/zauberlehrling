@@ -17,9 +17,7 @@ final class Task
      */
     public function consolidate($userProvidedPathToConsolidate, StyleInterface $ioStyle = null)
     {
-        if ($ioStyle === null) {
-            $ioStyle = new NullStyle();
-        }
+        $ioStyle = $ioStyle ?: new NullStyle();
         $ioStyle->progressStart(4);
 
         $pathToConsolidate = FileSystem::getRealPathToReadableAndWritableFile($userProvidedPathToConsolidate);
