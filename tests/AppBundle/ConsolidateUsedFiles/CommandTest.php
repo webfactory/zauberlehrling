@@ -2,6 +2,7 @@
 
 namespace AppBundle\ConsolidateUsedFiles;
 
+use Helper\FileSystem;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -69,7 +70,7 @@ final class CommandTest extends KernelTestCase
             'usedFiles' => $this->pathToFixture,
         ]);
 
-        $result = file($this->pathToFixture, FILE_IGNORE_NEW_LINES);
+        $result = FileSystem::readFileIntoArray($this->pathToFixture);
         $this->assertEquals(['a', 'b', 'c', 'e', 'g'], $result);
     }
 }
