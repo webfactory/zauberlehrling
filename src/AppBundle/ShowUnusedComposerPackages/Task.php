@@ -80,7 +80,7 @@ final class Task
         if (is_dir($path) === false) {
             $message = 'The path "' . $path . '" is no valid directory.';
         } elseif (is_readable($path) === false) {
-            $message ='The directory "' . $path . '" is not readable.';
+            $message = 'The directory "' . $path . '" is not readable.';
         }
 
         if (isset($message)) {
