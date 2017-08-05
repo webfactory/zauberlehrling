@@ -23,7 +23,7 @@ final class Task
         $ioStyle->progressStart(4);
 
         $pathToConsolidate = FileSystem::getRealPathToReadableAndWritableFile($userProvidedPathToConsolidate);
-        if (!$pathToConsolidate) {
+        if ($pathToConsolidate === null) {
             $message = $userProvidedPathToConsolidate . ' has to be a file both readable and writable.';
             $ioStyle->error($message);
             throw new \InvalidArgumentException($message);

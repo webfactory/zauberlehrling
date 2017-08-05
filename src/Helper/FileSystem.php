@@ -19,11 +19,16 @@ final class FileSystem
 
     /**
      * @param string $path
-     * @return string[]|bool
+     * @return string[]
      */
     public static function readFileIntoArray($path)
     {
-        return file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $array = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($array === false) {
+            throw new \RuntimeException($path . ' could not be read.');
+        }
+
+        return $array;
     }
 
     /**
