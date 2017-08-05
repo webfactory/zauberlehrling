@@ -51,7 +51,9 @@ final class Task
     {
         $existingPhpFiles = [];
 
-        foreach ((new Finder())->in($pathToInspect)->files()->name('*.php')->getIterator() as $foundFileInfo) {
+        /** @var \Iterator $foundFilesInfos */
+        $foundFilesInfos = (new Finder())->in($pathToInspect)->files()->name('*.php')->getIterator();
+        foreach ($foundFilesInfos as $foundFileInfo) {
             /** @var $foundFileInfo \Symfony\Component\Finder\SplFileInfo */
             foreach ($blacklistRegExps as $blacklistRegExp) {
                 if (preg_match($blacklistRegExp, $foundFileInfo->getRealPath()) === 1) {

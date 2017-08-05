@@ -34,7 +34,9 @@ final class Task
     {
         $existingAssets = [];
 
-        foreach ((new Finder())->in($pathToPublic)->files()->getIterator() as $foundFileInfo) {
+        /** @var \Iterator $foundFilesInfos */
+        $foundFilesInfos = (new Finder())->in($pathToPublic)->files()->getIterator();
+        foreach ($foundFilesInfos  as $foundFileInfo) {
             /** @var $foundFileInfo \Symfony\Component\Finder\SplFileInfo */
             foreach ($blacklistRegExps as $blacklistRegExp) {
                 if (preg_match($blacklistRegExp, $foundFileInfo->getRealPath()) === 1) {
