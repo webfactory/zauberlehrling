@@ -11,13 +11,14 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class CommandTest extends KernelTestCase
 {
-    const PATH_TO_FIXTURE = __DIR__ . '/fixtures/files-to-consolidate.txt';
-
     /** @var Command */
     private $command;
 
     /** @var CommandTester */
     private $commandTester;
+
+    /** @var string */
+    private $pathToFixture;
 
     protected function setUp()
     {
@@ -28,6 +29,8 @@ final class CommandTest extends KernelTestCase
         $this->command = $application->find('consolidate-used-files');
 
         $this->commandTester = new CommandTester($this->command);
+        
+        $this->pathToFixture = __DIR__ . '/fixtures/files-to-consolidate.txt';
     }
 
     /**
@@ -37,7 +40,7 @@ final class CommandTest extends KernelTestCase
     {
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
-            'usedFiles' => self::PATH_TO_FIXTURE,
+            'usedFiles' => $this->pathToFixture,
         ]);
 
         $output = $this->commandTester->getDisplay();
@@ -50,14 +53,14 @@ final class CommandTest extends KernelTestCase
     public function fileGetsConsolidated()
     {
         // set up fixture
-        file_put_contents(self::PATH_TO_FIXTURE, implode(PHP_EOL, ['b', 'a', 'a']));
+        file_put_contents($this->pathToFixture, implode(PHP_EOL, ['b', 'a', 'a']));
 
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
-            'usedFiles' => self::PATH_TO_FIXTURE,
+            'usedFiles' => $this->pathToFixture,
         ]);
 
-        $result = file(self::PATH_TO_FIXTURE, FILE_IGNORE_NEW_LINES);
+        $result = file($this->pathToFixture, FILE_IGNORE_NEW_LINES);
         $this->assertEquals(['a', 'b'], $result);
     }
 
@@ -79,7 +82,7 @@ final class CommandTest extends KernelTestCase
     /**
      * @test
      */
-    public function nonReadableFileGivesError()
+    public function nonWritableFileGivesError()
     {
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
@@ -94,7 +97,7 @@ final class CommandTest extends KernelTestCase
     /**
      * @test
      */
-    public function nonWritableFileGivesError()
+    public function nonReadableFileGivesError()
     {
         // make file not readable (it's not checked in that way since git couldn't read it that way).
         $pathToWritableButNotReadableFixture = __DIR__ . '/fixtures/writable-but-not-readable-file.txt';
