@@ -34,7 +34,7 @@ final class Command extends BaseCommand
     protected function configure()
     {
         $this->setName('consolidate-used-files')
-             ->setDescription('Consolidate the list of unused PHP files to improve performance of later commands.')
+             ->setDescription('Consolidate the list of unused PHP files to improve performance of later commands and readability for human readers.')
              ->addArgument(self::ARGUMENT_USED_FILES, InputArgument::REQUIRED, 'Path to the list of used files.');
     }
 
@@ -46,8 +46,14 @@ final class Command extends BaseCommand
         $originalPathToUsedFiles = $input->getArgument(self::ARGUMENT_USED_FILES);
         $pathToUsedFiles = realpath(dirname($originalPathToUsedFiles)) . '/' . basename($originalPathToUsedFiles);
 
+        if (!is_readable($pathToUsedFiles) || !is_writable($pathToUsedFiles)) {
+            $output->writeln('[ERROR] ' . $pathToUsedFiles . ' has to be a file both readable and writable to consolidate it.');
+            $output->writeln('');
+            return;
+        }
+
         $output->writeln('Consolidating used files in ' . $pathToUsedFiles);
-        $this->task->consolidate($input->getArgument(self::ARGUMENT_USED_FILES));
+        $this->task->consolidate($pathToUsedFiles);
         $output->writeln('Finished.');
         $output->writeln('');
     }
