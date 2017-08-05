@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * Tests for the ConsolidateUsedFiles console command class.
+ * Tests for the ConsolidateUsedFiles console command.
  */
 final class CommandTest extends KernelTestCase
 {
@@ -27,9 +27,8 @@ final class CommandTest extends KernelTestCase
         $application = new Application(self::$kernel);
         $application->add(new Command(new Task()));
         $this->command = $application->find('consolidate-used-files');
-
         $this->commandTester = new CommandTester($this->command);
-        
+
         $this->pathToFixture = __DIR__ . '/fixtures/files-to-consolidate.txt';
     }
 
@@ -44,7 +43,7 @@ final class CommandTest extends KernelTestCase
         ]);
 
         $output = $this->commandTester->getDisplay();
-        $this->assertContains('Finished', $output);
+        $this->assertContains('[OK]', $output);
     }
 
     /**
