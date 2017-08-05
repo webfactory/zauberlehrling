@@ -38,7 +38,7 @@ final class CommonPathDeterminator
 
             do {
                 $commonCharacters = substr($commonCharacters, 0, -1);
-            } while (!$this->stringBeginsWith($path, $commonCharacters) && $commonCharacters !== '');
+            } while (!$this->stringBeginsWith($path, $commonCharacters));
         }
 
         return $commonCharacters;
@@ -52,7 +52,7 @@ final class CommonPathDeterminator
     private function stringBeginsWith($hay, $needle)
     {
         if ($needle === '') {
-            return '';
+            return true;
         }
 
         return strpos($hay, $needle) === 0;
