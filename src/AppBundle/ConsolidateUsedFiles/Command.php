@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Symfony-Console-Command wrapper for the ConsolidateUsedFiles task.
@@ -45,16 +46,15 @@ final class Command extends BaseCommand
     {
         $originalPathToUsedFiles = $input->getArgument(self::ARGUMENT_USED_FILES);
         $pathToUsedFiles = realpath(dirname($originalPathToUsedFiles)) . '/' . basename($originalPathToUsedFiles);
+        $ioStyle = new SymfonyStyle($input, $output);
 
         if (!is_readable($pathToUsedFiles) || !is_writable($pathToUsedFiles)) {
-            $output->writeln('[ERROR] ' . $pathToUsedFiles . ' has to be a file both readable and writable to consolidate it.');
-            $output->writeln('');
+            $ioStyle->error($pathToUsedFiles . ' has to be a file both readable and writable to consolidate it.');
             return;
         }
 
-        $output->writeln('Consolidating used files in ' . $pathToUsedFiles);
-        $this->task->consolidate($pathToUsedFiles);
-        $output->writeln('Finished.');
-        $output->writeln('');
+        $this->task->consolidate($pathToUsedFiles, $ioStyle);
+
+        $ioStyle->success('Finished consolidating ' . $pathToUsedFiles);
     }
 }
