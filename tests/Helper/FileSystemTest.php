@@ -156,7 +156,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             __DIR__ . '/fixtures/regular-file.txt',
-            FileSystem::getPathToOutput(__DIR__ . '/fixtures/../fixtures/regular-file.txt', '')
+            FileSystem::getPathToOutput(__DIR__ . '/fixtures/../fixtures/regular-file.txt', '', '')
         );
     }
 
@@ -167,7 +167,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             __DIR__ . '/fixtures/potentially-unused-files.txt',
-            FileSystem::getPathToOutput(null, __DIR__ . '/fixtures/../fixtures/regular-file.txt')
+            FileSystem::getPathToOutput(null, __DIR__ . '/fixtures/../fixtures/regular-file.txt', 'potentially-unused-files.txt')
         );
     }
 
@@ -177,7 +177,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
     public function getPathToOutputRejectsUnwritablePaths()
     {
         $this->setExpectedException(\InvalidArgumentException::class);
-        FileSystem::getPathToOutput(__DIR__ . '/fixtures/does-not-exist/foo', '');
+        FileSystem::getPathToOutput(__DIR__ . '/fixtures/does-not-exist/foo', '', '');
     }
 
     /**
@@ -189,7 +189,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
         static::ensurePermissionsFor(0400, $pathToUnwritableYetReadableFile);
 
         $this->setExpectedException(\InvalidArgumentException::class);
-        FileSystem::getPathToOutput($pathToUnwritableYetReadableFile, '');
+        FileSystem::getPathToOutput($pathToUnwritableYetReadableFile, '', '');
 
         static::restoreOriginalPermissionsFor($pathToUnwritableYetReadableFile);
     }

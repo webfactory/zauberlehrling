@@ -50,7 +50,7 @@ final class Task
         $unusedPhpFiles = array_diff($foundFiles, $usedFiles);
         sort($unusedPhpFiles);
 
-        $pathToOutput = FileSystem::getPathToOutput($userProvidedPathToOutput, $userProvidedPathToUsedFiles);
+        $pathToOutput = FileSystem::getPathToOutput($userProvidedPathToOutput, $userProvidedPathToUsedFiles, 'potentially-unused-files.txt');
         FileSystem::writeArrayToFile($unusedPhpFiles, $pathToOutput);
         $ioStyle->success([
             'Finished writing list of ' . count($unusedPhpFiles) . ' potentially unused PHP files. Please inspect the '

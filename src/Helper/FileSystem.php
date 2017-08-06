@@ -85,14 +85,15 @@ final class FileSystem
 
     /**
      * @param string|null $userProvidedPathToOutput
-     * @param string $pathToUsedFiles
+     * @param string $fallbackPath
+     * @param string $fallbackFileName
      * @return string
      */
-    public static function getPathToOutput($userProvidedPathToOutput = null, $pathToUsedFiles)
+    public static function getPathToOutput($userProvidedPathToOutput = null, $fallbackPath, $fallbackFileName)
     {
         $pathToOutput = ($userProvidedPathToOutput !== null)
             ? realpath(dirname($userProvidedPathToOutput)) . '/' . basename($userProvidedPathToOutput)
-            : realpath(dirname($pathToUsedFiles)) . '/potentially-unused-files.txt';
+            : realpath(dirname($fallbackPath)) . '/' . $fallbackFileName;
 
         if (is_file($pathToOutput) && !is_writable($pathToOutput)) {
             throw new \InvalidArgumentException('Output file ' . $pathToOutput . ' is not writable');
