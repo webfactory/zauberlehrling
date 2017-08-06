@@ -2,6 +2,7 @@
 
 namespace AppBundle\ShowUnusedComposerPackages;
 use Helper\FileSystem;
+use Helper\FileSystemTest;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -83,6 +84,21 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException(\InvalidArgumentException::class);
 
         $this->task->getUnusedPackagePaths($this->pathToComposerJson, 'invalid path', $this->pathToUsedFiles, null);
+    }
+
+    /**
+     * @test
+     */
+    public function unreadablePathToVendorGetsRejected()
+    {
+        FileSystemTest::ensurePermissionsFor(0200, $this->pathToVendor);
+
+        try {
+            $this->setExpectedException(\InvalidArgumentException::class);
+            $this->task->getUnusedPackagePaths($this->pathToComposerJson, $this->pathToVendor, $this->pathToUsedFiles, null);
+        } finally {
+            FileSystemTest::restoreOriginalPermissionsFor($this->pathToVendor);
+        }
     }
 
     /**
