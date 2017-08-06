@@ -38,7 +38,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
                          ->method('getDatabasePlatform')
                          ->willReturn($this->getMock(\Doctrine\DBAL\Platforms\AbstractPlatform::class));
 
-        $this->task = new Task($this->connection);
+        $this->task = new Task($this->connection, '');
     }
 
     /**

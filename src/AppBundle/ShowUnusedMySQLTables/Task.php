@@ -35,16 +35,21 @@ final class Task
      */
     private $connection;
 
+    /** @var string, e.g 'mysql.' for accessing mysql database tables from the connection  */
+    private $dbSystemCatalogPrefix;
+
     /** @var StyleInterface */
     private $ioStyle;
 
     /**
      * @param Connection $connection
+     * @param string $dbSystemCatalogPrefix
      */
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, $dbSystemCatalogPrefix)
     {
         $this->connection = $connection;
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+        $this->dbSystemCatalogPrefix = $dbSystemCatalogPrefix;
     }
 
     /**
@@ -113,7 +118,7 @@ final class Task
     {
         return $this->connection->createQueryBuilder()
                                 ->select('argument')
-                                ->from('mysql.general_log')
+                                ->from($this->dbSystemCatalogPrefix . 'general_log')
                                 ->where("command_type = 'Query'")
                                 ->execute();
     }

@@ -26,7 +26,11 @@ final class Command extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $task = new Task($this->getContainer()->get('doctrine.dbal.default_connection'));
+        $container = $this->getContainer();
+        $task = new Task(
+            $container->get('doctrine.dbal.default_connection'),
+            $container->getParameter('db_system_catalog_prefix')
+        );
         $task->getUnusedTableNames(new SymfonyStyle($input, $output));
     }
 }
