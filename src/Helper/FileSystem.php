@@ -41,4 +41,67 @@ final class FileSystem
         fwrite($handle, implode(PHP_EOL, $lines));
         fclose($handle);
     }
+
+    /**
+     * @param string|null $userProvidedPathToBlacklist
+     * @return string[]
+     */
+    public static function getBlacklistingRegExps($userProvidedPathToBlacklist = null)
+    {
+        if ($userProvidedPathToBlacklist === null) {
+            return [];
+        }
+
+        if (!is_file($userProvidedPathToBlacklist) || !is_readable($userProvidedPathToBlacklist)) {
+            throw new \InvalidArgumentException($userProvidedPathToBlacklist . ' is no readable file');
+        }
+
+        return FileSystem::readFileIntoArray($userProvidedPathToBlacklist);
+    }
+
+    /**
+     * @param \SplFileInfo[] $foundFilesInfos
+     * @param string[] $blacklistRegExps
+     * @return string[]
+     */
+    public static function filterFilesIn(array $foundFilesInfos, array $blacklistRegExps)
+    {
+        $filteredFiles = [];
+
+        /** @var \Iterator $foundFilesInfos */
+        foreach ($foundFilesInfos as $foundFileInfo) {
+            /** @var $foundFileInfo \SplFileInfo */
+            foreach ($blacklistRegExps as $blacklistRegExp) {
+                if (preg_match($blacklistRegExp, $foundFileInfo->getRealPath()) === 1) {
+                    continue 2;
+                }
+            }
+
+            $filteredFiles[] = $foundFileInfo->getRealPath();
+        }
+
+        return $filteredFiles;
+    }
+
+    /**
+     * @param string|null $userProvidedPathToOutput
+     * @param string $pathToUsedFiles
+     * @return string
+     */
+    public static function getPathToOutput($userProvidedPathToOutput = null, $pathToUsedFiles)
+    {
+        $pathToOutput = ($userProvidedPathToOutput !== null)
+            ? realpath(dirname($userProvidedPathToOutput)) . '/' . basename($userProvidedPathToOutput)
+            : realpath(dirname($pathToUsedFiles)) . '/potentially-unused-files.txt';
+
+        if (is_file($pathToOutput) && !is_writable($pathToOutput)) {
+            throw new \InvalidArgumentException('Output file ' . $pathToOutput . ' is not writable');
+        }
+
+        if (!is_writable(dirname($pathToOutput))) {
+            throw new \InvalidArgumentException('Output path ' . dirname($pathToOutput) . ' is not writable');
+        }
+
+        return $pathToOutput;
+    }
 }

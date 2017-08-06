@@ -92,4 +92,105 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
 
         static::restoreOriginalPermissionsFor($pathToUnwritableYetReadableFile);
     }
+
+    /**
+     * @test
+     */
+    public function getBlacklistingRegExpsReturnsEmptyArrayForNullInput()
+    {
+        $this->assertEquals([], FileSystem::getBlacklistingRegExps(null));
+    }
+
+    /**
+     * @test
+     */
+    public function getBlacklistingRegExpsRejectsUnreadableFile()
+    {
+        $this->setExpectedException(\InvalidArgumentException::class);
+        FileSystem::getBlacklistingRegExps(__DIR__ . '/non-existing-file');
+    }
+
+    /**
+     * @test
+     */
+    public function getBlacklistingRegExpsReturnsArrayOfLines()
+    {
+        $result = FileSystem::getBlacklistingRegExps(__DIR__ . '/fixtures/blacklist.txt');
+        $this->assertEquals(['#/var#', '#/tmp#'], $result);
+    }
+
+    /**
+     * @test
+     */
+    public function filterFilesInReturnsNonBlacklistedFile()
+    {
+        $pathToRegularFile = __DIR__ . '/fixtures/regular-file.txt';
+        $result = FileSystem::filterFilesIn(
+            [new \SplFileInfo($pathToRegularFile)],
+            []
+        );
+
+        $this->assertInternalType('array', $result);
+        $this->assertContains($pathToRegularFile, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function filterFilesInDoesNotReturnBlacklistedFile()
+    {
+        $pathToFile = __DIR__ . '/fixtures/regular-file.txt';
+        $result = FileSystem::filterFilesIn(
+            [new \SplFileInfo($pathToFile)],
+            ['#' . $pathToFile . '#']
+        );
+
+        $this->assertInternalType('array', $result);
+        $this->assertNotContains($pathToFile, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function getPathToOutputGetsRealPathToProvidedOutputPath()
+    {
+        $this->assertEquals(
+            __DIR__ . '/fixtures/regular-file.txt',
+            FileSystem::getPathToOutput(__DIR__ . '/fixtures/../fixtures/regular-file.txt', '')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getPathToOutputDefaultsToFileNextToUsedFiles()
+    {
+        $this->assertEquals(
+            __DIR__ . '/fixtures/potentially-unused-files.txt',
+            FileSystem::getPathToOutput(null, __DIR__ . '/fixtures/../fixtures/regular-file.txt')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function getPathToOutputRejectsUnwritablePaths()
+    {
+        $this->setExpectedException(\InvalidArgumentException::class);
+        FileSystem::getPathToOutput(__DIR__ . '/fixtures/does-not-exist/foo', '');
+    }
+
+    /**
+     * @test
+     */
+    public function getPathToOutputRejectsUnwritableFile()
+    {
+        $pathToUnwritableYetReadableFile = __DIR__ . '/fixtures/unwritable-yet-readable-file.txt';
+        static::ensurePermissionsFor(0400, $pathToUnwritableYetReadableFile);
+
+        $this->setExpectedException(\InvalidArgumentException::class);
+        FileSystem::getPathToOutput($pathToUnwritableYetReadableFile, '');
+
+        static::restoreOriginalPermissionsFor($pathToUnwritableYetReadableFile);
+    }
 }
