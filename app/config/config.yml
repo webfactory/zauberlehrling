@@ -6,6 +6,7 @@ imports:
 # http://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: en
+    db_system_catalog_prefix: "mysql."
 
 framework:
     secret:          "%secret%"

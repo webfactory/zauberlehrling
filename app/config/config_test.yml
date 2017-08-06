@@ -5,3 +5,12 @@ framework:
     test: ~
     session:
         storage_id: session.storage.mock_file
+
+doctrine:
+    dbal:
+        driver:   pdo_sqlite
+        charset:  UTF8
+        memory: true
+
+parameters:
+    db_system_catalog_prefix: ""

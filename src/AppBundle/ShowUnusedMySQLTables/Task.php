@@ -5,7 +5,9 @@ namespace AppBundle\ShowUnusedMySQLTables;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Schema\Table;
+use Helper\NullStyle;
 use PHPSQLParser\PHPSQLParser;
+use Symfony\Component\Console\Style\StyleInterface;
 
 /**
  * Get the names of unused MySQL tables.
@@ -33,38 +35,55 @@ final class Task
      */
     private $connection;
 
+    /** @var string, e.g 'mysql.' for accessing mysql database tables from the connection  */
+    private $dbSystemCatalogPrefix;
+
+    /** @var StyleInterface */
+    private $ioStyle;
+
     /**
      * @param Connection $connection
+     * @param string $dbSystemCatalogPrefix
      */
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, $dbSystemCatalogPrefix)
     {
         $this->connection = $connection;
         $this->connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+        $this->dbSystemCatalogPrefix = $dbSystemCatalogPrefix;
+    }
+
+    /**
+     * @param StyleInterface|null $ioStyle
+     */
+    public function getUnusedTableNames(StyleInterface $ioStyle = null)
+    {
+        $this->ioStyle = $ioStyle ?: new NullStyle();
+        $this->ioStyle->text('Started.');
+
+        $unusedTableNames = array_diff($this->getAllTablesNames(), $this->getUsedTableNames());
+
+        $this->ioStyle->newLine();
+        $this->ioStyle->text('Calculated ' . count($unusedTableNames) . ' potentially unused tables:');
+        $this->ioStyle->listing($unusedTableNames);
+        $this->ioStyle->success('Finished listing potentially unused tables.');
     }
 
     /**
      * @return string[]
      */
-    public function getUnusedTableNames()
+    private function getAllTablesNames()
     {
-        $unusedTableNames = [];
-        $usedTableNames = $this->getUsedTableNames();
+        $tables = $this->connection->getSchemaManager()->listTables();
+        $tableNames = array_map(
+            function (Table $table) {
+                return $table->getName();
+            },
+            $tables
+        );
 
-        foreach ($this->getAllTables() as $table) {
-            if (!in_array($table->getName(), $usedTableNames)) {
-                $unusedTableNames[] = $table->getName();
-            }
-        }
+        $this->ioStyle->text('Found ' . count($tableNames) . ' tables in the database "' . $this->connection->getDatabase() . '".');
 
-        return $unusedTableNames;
-    }
-
-    /**
-     * @return Table[]
-     */
-    private function getAllTables()
-    {
-        return $this->connection->getSchemaManager()->listTables();
+        return $tableNames;
     }
 
     /**
@@ -72,31 +91,22 @@ final class Task
      */
     private function getUsedTableNames()
     {
-        $usedTableNames = [];
-
-        foreach ($this->extractTableNamesFromLoggedQueries() as $usedTableName) {
-            if (!in_array($usedTableName, $usedTableNames)) {
-                $usedTableNames[] = $usedTableName;
-            }
-        }
-
-        return $usedTableNames;
-    }
-
-    /**
-     * @return string[]
-     */
-    private function extractTableNamesFromLoggedQueries()
-    {
-        $usedTableNames = [];
         $stmt = $this->getLoggedQueriesStatement();
+        $numberOfLoggedQueries = $stmt->rowCount();
+        $this->ioStyle->text('Analyzing ' . $numberOfLoggedQueries . ' logged queries (among all databases):');
+
+        $this->ioStyle->progressStart($numberOfLoggedQueries);
+
+        $usedTableNames = [];
         while ($loggedQuery = $stmt->fetch(\PDO::FETCH_COLUMN)) {
-            foreach ($this->extractTableNamesFromLoggedQuery($loggedQuery) as $usedTableName) {
-                if (!in_array($usedTableName, $usedTableNames)) {
-                    $usedTableNames[] = $usedTableName;
-                }
-            }
+            $usedTableNames = array_merge($usedTableNames, $this->extractTableNamesFromLoggedQuery($loggedQuery));
+            $this->ioStyle->progressAdvance();
         }
+
+        $usedTableNames = array_unique($usedTableNames);
+
+        $this->ioStyle->newLine();
+        $this->ioStyle->text('Found ' . count($usedTableNames) . ' used tables (among all databases).');
 
         return $usedTableNames;
     }
@@ -108,7 +118,7 @@ final class Task
     {
         return $this->connection->createQueryBuilder()
                                 ->select('argument')
-                                ->from('mysql.general_log')
+                                ->from($this->dbSystemCatalogPrefix . 'general_log')
                                 ->where("command_type = 'Query'")
                                 ->execute();
     }
@@ -123,10 +133,6 @@ final class Task
 
         $parser = new PHPSQLParser();
         $parsedQuery = $parser->parse($loggedQuery);
-
-        if ($parsedQuery === false) {
-            return [];
-        }
 
         if (!array_key_exists('FROM', $parsedQuery)) {
             return [];
