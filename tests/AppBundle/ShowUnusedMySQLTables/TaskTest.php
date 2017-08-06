@@ -7,6 +7,9 @@ use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Tests for the ShowUnusedMySQLTables task.
@@ -46,11 +49,14 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $this->setUpConnectionToReturnAsAllTablenames(['foo', 'bar']);
         $this->setUpSelectStatementToReturn([]);
 
-        $unusedTableNames = $this->task->getUnusedTableNames();
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedTableNames($ioStyle);
 
-        $this->assertCount(2, $unusedTableNames);
-        $this->assertContains('foo', $unusedTableNames);
-        $this->assertContains('bar', $unusedTableNames);
+        $outputAsString = $output->fetch();
+        $this->assertContains('Calculated 2 potentially unused tables', $outputAsString);
+        $this->assertContains('foo', $outputAsString);
+        $this->assertContains('bar', $outputAsString);
     }
 
     /**
@@ -61,9 +67,32 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $this->setUpConnectionToReturnAsAllTablenames(['foo', 'bar', 'baz']);
         $this->setUpSelectStatementToReturn(['SELECT * FROM foo', 'SELECT bar.*, baz.* FROM bar JOIN baz']);
 
-        $unusedTableNames = $this->task->getUnusedTableNames();
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedTableNames($ioStyle);
 
-        $this->assertEmpty($unusedTableNames);
+        $outputAsString = $output->fetch();
+        $this->assertContains('Calculated 0 potentially unused tables', $outputAsString);
+        $this->assertNotContains('foo', $outputAsString);
+        $this->assertNotContains('bar', $outputAsString);
+        $this->assertNotContains('baz', $outputAsString);
+    }
+
+    /**
+     * @test
+     */
+    public function unusedTableNamesGetReportedWithoutLoggedSelectStatements()
+    {
+        $this->setUpConnectionToReturnAsAllTablenames(['foo']);
+        $this->setUpSelectStatementToReturn(['DESCRIBE foo']);
+
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedTableNames($ioStyle);
+
+        $outputAsString = $output->fetch();
+        $this->assertContains('Calculated 1 potentially unused table', $outputAsString);
+        $this->assertContains('foo', $outputAsString);
     }
 
     /**
@@ -73,8 +102,13 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     {
         $mockedStatement = $this->getMockBuilder(Statement::class)->disableOriginalConstructor()->getMock();
 
-        for ($i = 0; $i < count($returnValues); $i++) {
-            $mockedStatement->expects($this->at($i))
+        $numberOfReturnValues = count($returnValues);
+        $mockedStatement->expects($this->at(0))
+                        ->method('rowCount')
+                        ->willReturn($numberOfReturnValues);
+
+        for ($i = 0; $i < $numberOfReturnValues; $i++) {
+            $mockedStatement->expects($this->at($i+1))
                             ->method('fetch')
                             ->willReturn($returnValues[$i]);
         }
