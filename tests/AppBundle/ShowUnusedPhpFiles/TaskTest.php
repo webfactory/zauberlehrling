@@ -61,6 +61,15 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function emptyUsedFilesGetRejected()
+    {
+        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->task->getUnusedPhpFiles(__DIR__ . '/fixtures/empty.txt', null, null, null);
+    }
+
+    /**
+     * @test
+     */
     public function unusedPhpFilesGetReported()
     {
         $this->task->getUnusedPhpFiles($this->pathToUsedFiles, $this->pathToInspect, $this->pathToOutput, null);
