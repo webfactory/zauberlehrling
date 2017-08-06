@@ -3,7 +3,9 @@
   "license": "MIT",
   "type": "project",
   "require": {
-    "author-1/package-1": "*",
-    "author-2/package-2": "*"
+    "author-1/used-package": "*",
+    "author-1/unused-package": "*",
+    "author-1/fairly-unused-package": "*",
+    "author-1/ignored-package": "*"
   }
 }

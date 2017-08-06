@@ -1,6 +1,10 @@
 <?php
 
 namespace AppBundle\ShowUnusedComposerPackages;
+use Helper\FileSystem;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Tests for the ShowUnusedComposerPackages Task.
@@ -14,10 +18,17 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     private $task;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $pathToComposerJson;
+
+    /** @var string */
+    private $pathToVendor;
+
+    /** @var string */
+    private $pathToUsedFiles;
+
+    /** @var string */
+    private $pathToBlacklist;
 
     /**
      * @see \PHPUnit_Framework_TestCase::setUp()
@@ -26,6 +37,30 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     {
         $this->pathToComposerJson = __DIR__ . '/fixtures/composer.json';
         $this->task = new Task();
+
+        $this->pathToComposerJson = __DIR__ . '/fixtures/composer.json';
+        $this->pathToVendor = __DIR__ . '/fixtures/vendor';
+        $this->pathToUsedFiles = __DIR__ . '/fixtures/used-files.txt';
+        $this->pathToBlacklist = __DIR__ . '/fixtures/blacklist.txt';
+
+        FileSystem::writeArrayToFile(
+            [
+                __DIR__ . '/fixtures/vendor/author-1/used-package/file.txt',
+                __DIR__ . '/fixtures/vendor/author-1/fairly-unused-package/AuthorPackageBundle.php',
+            ],
+            $this->pathToUsedFiles
+        );
+        FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/vendor/author-1/ignored-package#'], $this->pathToBlacklist);
+    }
+
+    /**
+     * @see \PHPUnit_Framework_TestCase::tearDown()
+     */
+    protected function tearDown()
+    {
+        // revert files so git doesn't recognise a change
+        FileSystem::writeArrayToFile([], $this->pathToUsedFiles);
+        FileSystem::writeArrayToFile([], $this->pathToBlacklist);
     }
 
     /**
@@ -33,9 +68,11 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function defaultPathToVendorIsGuessed()
     {
-        $this->setExpectedException(null);
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, null, $ioStyle);
 
-        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, [], []);
+        $this->assertContains(' ' . __DIR__ . '/fixtures/vendor/ ', $output->fetch());
     }
 
     /**
@@ -45,7 +82,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException(\InvalidArgumentException::class);
 
-        $this->task->getUnusedPackagePaths($this->pathToComposerJson, 'invalid path', [], []);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, 'invalid path', $this->pathToUsedFiles, null);
     }
 
     /**
@@ -53,10 +90,13 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function potentiallyUnusedPackagesGetReported()
     {
-        $unusedPackages = $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, [], []);
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, null, $ioStyle);
 
-        $this->assertCount(1, $unusedPackages);
-        $this->assertEquals(__DIR__ . '/fixtures/vendor/author-1/package-1', $unusedPackages[0]);
+        $outputAsString = $output->fetch();
+
+        $this->assertContains(__DIR__ . '/fixtures/vendor/author-1/unused-package', $outputAsString);
     }
 
     /**
@@ -64,14 +104,13 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function usedPackagesDontGetReported()
     {
-        $unusedPackages = $this->task->getUnusedPackagePaths(
-            $this->pathToComposerJson,
-            null,
-            [__DIR__ . '/fixtures/vendor/author-1/package-1/file.txt'],
-            []
-        );
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, null, $ioStyle);
 
-        $this->assertEmpty($unusedPackages);
+        $outputAsString = $output->fetch();
+
+        $this->assertNotContains(__DIR__ . '/fixtures/vendor/author-1/used-package', $outputAsString);
     }
 
     /**
@@ -83,29 +122,36 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function packageIsReportedIfOnlyItsSymfonyBundlePhpIsUsed()
     {
-        $unusedPackages = $this->task->getUnusedPackagePaths(
-            $this->pathToComposerJson,
-            null,
-            [__DIR__ . '/fixtures/vendor/author-1/package-1/Author1Package1Bundle.php'],
-            []
-        );
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, null, $ioStyle);
 
-        $this->assertCount(1, $unusedPackages);
-        $this->assertEquals(__DIR__ . '/fixtures/vendor/author-1/package-1', $unusedPackages[0]);
+        $outputAsString = $output->fetch();
+
+        $this->assertContains(__DIR__ . '/fixtures/vendor/author-1/fairly-unused-package', $outputAsString);
     }
 
     /**
      * @test
      */
-    public function packageIsReportedIfItsNotBlacklisted()
+    public function blacklistedPackagesDontGetReported()
     {
-        $unusedPackages = $this->task->getUnusedPackagePaths(
-            $this->pathToComposerJson,
-            null,
-            [__DIR__ . '/fixtures/vendor/author-1/package-1/Author1Package1Bundle.php'],
-            ['#' . __DIR__ . '/fixtures/vendor/author-1/.*#']
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, null, $ioStyle);
+
+        $outputAsString = $output->fetch();
+        $this->assertContains(
+            __DIR__ . '/fixtures/vendor/author-1/ignored-package',
+            $outputAsString,
+            'Precondition not met: ignored package wouldn\'t have been found even if not ignored'
         );
 
-        $this->assertEmpty($unusedPackages);
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedPackagePaths($this->pathToComposerJson, null, $this->pathToUsedFiles, $this->pathToBlacklist, $ioStyle);
+
+        $outputAsString = $output->fetch();
+        $this->assertNotContains(__DIR__ . '/fixtures/vendor/author-1/ignored-package', $outputAsString);
     }
 }

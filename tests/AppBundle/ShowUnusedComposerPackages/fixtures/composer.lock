@@ -1,7 +1,19 @@
 {
     "packages": [
         {
-            "name": "author-1/package-1",
+            "name": "author-1/used-package",
+            "version": "v1.0.0"
+        },
+        {
+            "name": "author-1/unused-package",
+            "version": "v1.0.0"
+        },
+        {
+            "name": "author-1/fairly-unused-package",
+            "version": "v1.0.0"
+        },
+        {
+            "name": "author-1/ignored-package",
             "version": "v1.0.0"
         }
     ]

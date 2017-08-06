@@ -6,6 +6,9 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\BufferIO;
 use Composer\Package\PackageInterface;
+use Helper\FileSystem;
+use Helper\NullStyle;
+use Symfony\Component\Console\Style\OutputStyle;
 
 /**
  * Get unused composer packages.
@@ -23,33 +26,42 @@ use Composer\Package\PackageInterface;
  */
 final class Task
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $pathToVendor;
+
+    /** @var OutputStyle */
+    private $ioStyle;
 
     /**
      * @param string $pathToComposerJson
      * @param string|null $pathToVendor
-     * @param string[] $usedFiles
-     * @param string[] $blacklistRegExps
-     * @return string[]
+     * @param string $pathToUsedFiles
+     * @param string|null $pathToBlacklist
+     * @param OutputStyle|null $ioStyle
      */
-    public function getUnusedPackagePaths($pathToComposerJson, $pathToVendor, array $usedFiles, array $blacklistRegExps)
+    public function getUnusedPackagePaths($pathToComposerJson, $pathToVendor, $pathToUsedFiles, $pathToBlacklist = null, OutputStyle $ioStyle = null)
     {
-        $unusedPackagePaths = [];
+        $this->ioStyle = $ioStyle ?: new NullStyle();
+
+        $usedFiles = FileSystem::readFileIntoArray($pathToUsedFiles);
+        $this->ioStyle->text('Found ' . (count($usedFiles)) . ' used files.');
+
         $usedFiles = $this->getRelevantUsedFiles($usedFiles);
 
         $pathToVendor = $pathToVendor ?: $this->getDefaultPathToVendor($pathToComposerJson);
         $this->pathToVendor = $this->assertPathToVendorIsValid($pathToVendor);
 
-        foreach ($this->getRelevantPackagePaths($pathToComposerJson, $blacklistRegExps) as $packagePath) {
+        $unusedPackagePaths = [];
+        foreach ($this->getRelevantPackagePaths($pathToComposerJson, $pathToBlacklist) as $packagePath) {
             if (!$this->atLeastOneFileIsInPath($usedFiles, $packagePath)) {
                 $unusedPackagePaths[] = $packagePath;
             }
         }
 
-        return $unusedPackagePaths;
+        $ioStyle->newLine();
+        $ioStyle->text('Calculated ' . count($unusedPackagePaths) . ' potentially unused packages:');
+        $ioStyle->listing($unusedPackagePaths);
+        $ioStyle->success('Finished listing potentially unused packages.');
     }
 
     /**
@@ -58,7 +70,13 @@ final class Task
      */
     private function getRelevantUsedFiles(array $usedFiles)
     {
-        return array_filter($usedFiles, function ($usedFile) { return strpos($usedFile, 'Bundle.php') === false; });
+        $filteredFiles = array_filter($usedFiles, function ($usedFile) { return strpos($usedFile, 'Bundle.php') === false; });
+        $difference = count($usedFiles) - count($filteredFiles);
+        if ($difference > 0) {
+            $this->ioStyle->text('Removed ' . $difference . ' *Bundle.php files from used files as they are likely irrelevant.');
+        }
+
+        return $filteredFiles;
     }
 
     /**
@@ -68,7 +86,10 @@ final class Task
     private function getDefaultPathToVendor($pathToComposerJson)
     {
         $projectRoot = realpath(dirname($pathToComposerJson));
-        return $projectRoot . '/vendor';
+        $vendorDir = $projectRoot . '/vendor/';
+        $this->ioStyle->text('Assume vendor directory to be ' . $vendorDir . ' (you can set it with the --' . Command::OPTION_VENDOR_DIRECTORY . ' option).');
+
+        return $vendorDir;
     }
 
     /**
@@ -84,8 +105,8 @@ final class Task
         }
 
         if (isset($message)) {
-            $message .= ' Please specify a readable directory with the ' . Command::OPTION_VENDOR_DIRECTORY . ' '
-                      . 'option.';
+            $message .= ' Please specify a readable directory with the ' . Command::OPTION_VENDOR_DIRECTORY . ' option.';
+            $this->ioStyle->error($message);
             throw new \InvalidArgumentException($message);
         }
 
@@ -94,14 +115,15 @@ final class Task
 
     /**
      * @param string $pathToComposerJson
-     * @param string[] $blacklistRegExps
+     * @param string $pathToBlacklist
      * @return string[]
      */
-    private function getRelevantPackagePaths($pathToComposerJson, array $blacklistRegExps)
+    private function getRelevantPackagePaths($pathToComposerJson, $pathToBlacklist)
     {
         $packagePaths = [];
         $composer = Factory::create(new BufferIO(), $pathToComposerJson);
 
+        $blacklistingRegExps = FileSystem::getBlacklistingRegExps($pathToBlacklist);
         foreach ($composer->getPackage()->getRequires() as $link) {
             $package = $composer->getLocker()->getLockedRepository()->findPackage($link->getTarget(), $link->getConstraint());
             if ($package === null) {
@@ -109,12 +131,18 @@ final class Task
             }
 
             $packagePath = realpath($this->getInstallPath($composer, $package));
-            if ($this->packagePathIsBlacklisted($packagePath, $blacklistRegExps)) {
+            if ($this->packagePathIsBlacklisted($packagePath, $blacklistingRegExps)) {
                 continue;
             }
 
             $packagePaths[] = $packagePath;
         }
+
+        $message = 'Found ' . count($packagePaths) . ' composer packages';
+        if (count($blacklistingRegExps) > 0) {
+            $message .= ' not matching the ' . count($blacklistingRegExps) . ' blacklisting regular expressions';
+        }
+        $this->ioStyle->text($message . '.');
 
         return $packagePaths;
     }
