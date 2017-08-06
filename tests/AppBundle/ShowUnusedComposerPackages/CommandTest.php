@@ -71,7 +71,7 @@ final class CommandTest extends KernelTestCase
     /**
      * @test
      */
-    public function fileGetsConsolidated()
+    public function commandWorks()
     {
         $this->commandTester->execute([
             'command'  => $this->command->getName(),
