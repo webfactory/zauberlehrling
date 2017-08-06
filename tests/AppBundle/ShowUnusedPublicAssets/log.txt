@@ -1,0 +1,1 @@
+10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /used/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-

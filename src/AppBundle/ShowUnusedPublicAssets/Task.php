@@ -2,6 +2,9 @@
 
 namespace AppBundle\ShowUnusedPublicAssets;
 
+use Helper\FileSystem;
+use Helper\NullStyle;
+use Symfony\Component\Console\Style\OutputStyle;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -12,52 +15,57 @@ final class Task
 {
     /**
      * @param string $pathToPublic
-     * @param string[] $logEntries
+     * @param string $pathToLogfile
      * @param string $regExpToFindFile
-     * @param string[] $blacklistRegExps
-     * @return string[]
+     * @param string|null $pathToOutput
+     * @param string|null $pathToBlacklist
+     * @param OutputStyle|null $ioStyle
      */
-    public function getUnusedPublicAssets($pathToPublic, array $logEntries, $regExpToFindFile, array $blacklistRegExps)
+    public function getUnusedPublicAssets($pathToPublic, $pathToLogfile, $regExpToFindFile, $pathToOutput, $pathToBlacklist, OutputStyle $ioStyle = null)
     {
-        $relevantPublicAssets = $this->getRelevantPublicAssets($pathToPublic, $blacklistRegExps);
-        $usedAssets = $this->getUsedAssets($pathToPublic, $logEntries, $regExpToFindFile);
+        $ioStyle = $ioStyle ?: new NullStyle();
+        $ioStyle->text('Started.');
 
-        return array_diff($relevantPublicAssets, $usedAssets);
-    }
+        $accessedUrls = $this->getAccessedUrls($pathToPublic, $pathToLogfile, $regExpToFindFile);
+        $ioStyle->text('Found ' . count($accessedUrls) . ' distinct accessed URLs.');
 
-    /**
-     * @param string $pathToPublic
-     * @param string[] $blacklistRegExps
-     * @return string[]
-     */
-    private function getRelevantPublicAssets($pathToPublic, array $blacklistRegExps)
-    {
-        $existingAssets = [];
+        $blacklistingRegExps = FileSystem::getBlacklistingRegExps($pathToBlacklist);
+        $foundFilesInfos = iterator_to_array((new Finder())->in($pathToPublic)->files()->getIterator());
+        $relevantPublicAssets = FileSystem::filterFilesIn($foundFilesInfos, $blacklistingRegExps);
 
-        /** @var \Iterator $foundFilesInfos */
-        $foundFilesInfos = (new Finder())->in($pathToPublic)->files()->getIterator();
-        foreach ($foundFilesInfos  as $foundFileInfo) {
-            /** @var $foundFileInfo \Symfony\Component\Finder\SplFileInfo */
-            foreach ($blacklistRegExps as $blacklistRegExp) {
-                if (preg_match($blacklistRegExp, $foundFileInfo->getRealPath()) === 1) {
-                    continue 2;
-                }
-            }
-
-            $existingAssets[] = $foundFileInfo->getRealPath();
+        $message = 'Found ' . count($relevantPublicAssets) . ' public assets';
+        $numberOfBlacklistingRegExps = count($blacklistingRegExps);
+        if ($numberOfBlacklistingRegExps > 0) {
+            $message .= ' not matched by the ' . $numberOfBlacklistingRegExps . ' blacklisting regular expressions';
         }
+        $ioStyle->text($message . ' in ' . $pathToPublic . '.');
 
-        return $existingAssets;
+        $unusedAssets = array_diff($relevantPublicAssets, $accessedUrls);
+        sort($unusedAssets);
+
+        $pathToOutput = FileSystem::getPathToOutput($pathToOutput, $pathToPublic, 'potentially-unused-public-assets.txt');
+        FileSystem::writeArrayToFile($unusedAssets, $pathToOutput);
+        $ioStyle->success([
+            'Finished writing list of ' . count($unusedAssets) . ' potentially unused public assets. Please inspect the '
+                . 'output file ' . $pathToOutput,
+            'For files you want to keep (even if they are not used according to the webserver access logs), you '
+                . 'can maintain a blacklist. With it, you can exclude these files from the output of further runs of '
+                . 'this command. See --help or the readme for details.',
+            'Once you are sure you can restore the rest of the files (ideally from your version control system), try '
+                . 'deleting them, e.g. with "xargs rm < ' . $pathToOutput . '", rerun your tests and check your logs '
+                . 'for 404s to see if that broke anything.',
+        ]);
     }
 
     /**
      * @param string $pathToPublic
-     * @param string[] $logEntries
+     * @param string $pathToLogfile
      * @param string $regExpToFindFile
      * @return string[]
      */
-    private function getUsedAssets($pathToPublic, array $logEntries, $regExpToFindFile)
+    private function getAccessedUrls($pathToPublic, $pathToLogfile, $regExpToFindFile)
     {
+        $logEntries = FileSystem::readFileIntoArray($pathToLogfile);
         $usedAssets = [];
         $regExpMatches = [];
 

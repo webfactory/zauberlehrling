@@ -2,6 +2,8 @@
 
 namespace AppBundle\ShowUnusedPublicAssets;
 
+use Helper\FileSystem;
+
 /**
  * Tests for the ShowUnusedPublicAssets task.
  */
@@ -14,12 +16,45 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     private $task;
 
+    /** @var string */
+    private $pathToPublic;
+
+    /** @var string */
+    private $pathToLogfile;
+
+    /** @var string */
+    private $regExpToFindFile;
+
+    /** @var string */
+    private $pathToOutput;
+
+    /** @var string */
+    private $pathToBlacklist;
+
     /**
      * @see \PHPUnit_Framework_TestCase::setUp()
      */
     protected function setUp()
     {
         $this->task = new Task();
+
+        $this->pathToPublic = __DIR__ . '/fixtures/';
+        $this->pathToLogfile = __DIR__ .'/log.txt';
+        $this->regExpToFindFile = '#"(?:get|post) ([a-z0-9\_\-\.\/]*)#i';
+        $this->pathToBlacklist = __DIR__ . '/blacklist.txt';
+        $this->pathToOutput = __DIR__ . '/potentially-unused-assets.txt';
+
+        FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/ignored/asset.css#'], $this->pathToBlacklist);
+    }
+
+    /**
+     * @see \PHPUnit_Framework_TestCase::tearDown()
+     */
+    protected function tearDown()
+    {
+        // revert files so git doesn't recognise a change
+        FileSystem::writeArrayToFile([], $this->pathToBlacklist);
+        unlink($this->pathToOutput);
     }
 
     /**
@@ -27,17 +62,17 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function unusedAssetsGetReported()
     {
-        $unusedAssets = $this->task->getUnusedPublicAssets(
-            __DIR__ . '/fixtures',
-            [
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /used/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /ignored/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-            ],
-            '#"(?:get|post) ([a-z0-9\_\-\.\/]*)#i',
-            []
+        $this->task->getUnusedPublicAssets(
+            $this->pathToPublic,
+            $this->pathToLogfile,
+            $this->regExpToFindFile,
+            $this->pathToOutput,
+            $this->pathToBlacklist
         );
 
-        $this->assertContains(realpath(__DIR__ . '/fixtures/asset.css'), $unusedAssets);
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertInternalType('array', $result);
+        $this->assertContains(realpath(__DIR__ . '/fixtures/asset.css'), $result);
     }
 
     /**
@@ -45,17 +80,17 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function usedAssetsDontGetReported()
     {
-        $unusedAssets = $this->task->getUnusedPublicAssets(
-            __DIR__ . '/fixtures',
-            [
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /used/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /ignored/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-            ],
-            '#"(?:get|post) ([a-z0-9\_\-\.\/]*)#i',
-            []
+        $this->task->getUnusedPublicAssets(
+            $this->pathToPublic,
+            $this->pathToLogfile,
+            $this->regExpToFindFile,
+            $this->pathToOutput,
+            $this->pathToBlacklist
         );
 
-        $this->assertNotContains(realpath(__DIR__ . '/fixtures/used/asset.css'), $unusedAssets);
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertInternalType('array', $result);
+        $this->assertNotContains(realpath(__DIR__ . '/fixtures/used/asset.css'), $result);
     }
 
     /**
@@ -63,16 +98,30 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function unusedAssetsInIgnoredPathDontGetReported()
     {
-        $unusedAssets = $this->task->getUnusedPublicAssets(
-            __DIR__ . '/fixtures/ignored',
-            [
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /used/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-                '10.20.30.1 localhost - [01/Jan/2000:00:00:00 +0200] "GET /ignored/asset.css HTTP/1.1" 200 115323 "http://localhost/referrer/" "User Agent" WWYs0n8AAQEAAFi5VK0AAAAA proc_time=2370248 port=80 https=-',
-            ],
-            '#"(?:get|post) ([a-z0-9\_\-\.\/]*)#i',
-            ['#/tmp/.*#i', '#' . __DIR__ . '/fixtures/ignored/.*#']
+        $this->task->getUnusedPublicAssets(
+            $this->pathToPublic,
+            $this->pathToLogfile,
+            $this->regExpToFindFile,
+            $this->pathToOutput,
+            null
+        );
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertInternalType('array', $result);
+        $this->assertContains(
+            realpath(__DIR__ . '/fixtures/ignored/asset.css'),
+            $result,
+            'Precondition not met: ignored file wouldn\'t have been found even if not ignored'
         );
 
-        $this->assertNotContains(realpath(__DIR__ . '/fixtures/ignored/asset.css'), $unusedAssets);
+        $this->task->getUnusedPublicAssets(
+            $this->pathToPublic,
+            $this->pathToLogfile,
+            $this->regExpToFindFile,
+            $this->pathToOutput,
+            $this->pathToBlacklist
+        );
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertInternalType('array', $result);
+        $this->assertNotContains(realpath(__DIR__ . '/fixtures/ignored/asset.css'), $result);
     }
 }
