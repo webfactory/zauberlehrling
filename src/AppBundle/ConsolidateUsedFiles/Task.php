@@ -18,7 +18,6 @@ final class Task
     public function consolidate($userProvidedPathToConsolidate, StyleInterface $ioStyle = null)
     {
         $ioStyle = $ioStyle ?: new NullStyle();
-        $ioStyle->progressStart(4);
 
         $pathToConsolidate = FileSystem::getRealPathToReadableAndWritableFile($userProvidedPathToConsolidate);
         if ($pathToConsolidate === null) {
@@ -26,17 +25,11 @@ final class Task
             $ioStyle->error($message);
             throw new \InvalidArgumentException($message);
         }
-        $ioStyle->progressAdvance();
 
         $usedFiles = FileSystem::readFileIntoArray($pathToConsolidate);
-        $ioStyle->progressAdvance();
-
         $usedFiles = array_unique($usedFiles);
         sort($usedFiles);
-        $ioStyle->progressAdvance();
-
         FileSystem::writeArrayToFile($usedFiles, $pathToConsolidate);
-        $ioStyle->progressFinish();
 
         $ioStyle->success('Finished consolidating ' . $pathToConsolidate);
     }
