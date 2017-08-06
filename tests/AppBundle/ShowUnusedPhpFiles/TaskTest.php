@@ -2,6 +2,11 @@
 
 namespace AppBundle\ShowUnusedPhpFiles;
 
+use Helper\FileSystem;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
 /**
  * Tests for the ShowUnusedPhpFiles task.
  */
@@ -14,12 +19,43 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     private $task;
 
+    /** @var string */
+    private $pathToUsedFiles;
+
+    /** @var string */
+    private $pathToOutput;
+
+    /** @var string */
+    private $pathToInspect;
+
+    /** @var string */
+    private $pathToBlacklist;
+
     /**
      * @see \PHPUnit_Framework_TestCase::setUp()
      */
     protected function setUp()
     {
         $this->task = new Task();
+
+        $this->pathToInspect = __DIR__ . '/fixtures';
+        $this->pathToUsedFiles = __DIR__ . '/fixtures/used-files.txt';
+        $this->pathToOutput = __DIR__ . '/fixtures/potentially-unused-files.txt';
+        $this->pathToBlacklist = __DIR__ . '/fixtures/blacklist.txt';
+
+        FileSystem::writeArrayToFile([__DIR__ . '/fixtures/used/file.php'], $this->pathToUsedFiles);
+        FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/ignored/file.php#'], $this->pathToBlacklist);
+    }
+
+    /**
+     * @see \PHPUnit_Framework_TestCase::tearDown()
+     */
+    protected function tearDown()
+    {
+        // revert files so git doesn't recognise a change
+        FileSystem::writeArrayToFile([], $this->pathToUsedFiles);
+        FileSystem::writeArrayToFile([], $this->pathToOutput);
+        FileSystem::writeArrayToFile([], $this->pathToBlacklist);
     }
 
     /**
@@ -27,13 +63,10 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function unusedPhpFilesGetReported()
     {
-        $unusedFiles = $this->task->getUnusedPhpFiles(
-            [__DIR__ . '/fixtures/used/file.php'],
-            __DIR__ . '/fixtures',
-            []
-        );
+        $this->task->getUnusedPhpFiles($this->pathToUsedFiles, $this->pathToInspect, $this->pathToOutput, null);
 
-        $this->assertContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertContains(realpath(__DIR__ . '/fixtures/file.php'), $result);
     }
 
     /**
@@ -41,27 +74,29 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function usedPhpFilesDontGetReported()
     {
-        $unusedFiles = $this->task->getUnusedPhpFiles(
-            [__DIR__ . '/fixtures/file.php'],
-            __DIR__ . '/fixtures',
-            []
-        );
+        $this->task->getUnusedPhpFiles($this->pathToUsedFiles, $this->pathToInspect, $this->pathToOutput, null);
 
-        $this->assertNotContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertNotContains(realpath(__DIR__ . '/fixtures/used/file.php'), $result);
     }
 
     /**
      * @test
      */
-    public function unusedPhpFilesInIgnoredPathDontGetReported()
+    public function unusedButBlacklistedPhpFilesDontGetReported()
     {
-        $unusedFiles = $this->task->getUnusedPhpFiles(
-            [__DIR__ . '/fixtures/used/file.php'],
-            __DIR__ . '/fixtures/ignored',
-            ['#/tmp/.*#', '#' . __DIR__ . '/fixtures/ignored/.*#']
+        $this->task->getUnusedPhpFiles($this->pathToUsedFiles, $this->pathToInspect, $this->pathToOutput, null);
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertContains(
+            realpath(__DIR__ . '/fixtures/ignored/file.php'),
+            $result,
+            'Precondition not met: ignored file wouldn\'t have been found even if not ignored'
         );
 
-        $this->assertEmpty($unusedFiles);
+        $this->task->getUnusedPhpFiles($this->pathToUsedFiles, $this->pathToInspect, $this->pathToOutput, $this->pathToBlacklist);
+
+        $result = FileSystem::readFileIntoArray($this->pathToOutput);
+        $this->assertNotContains(realpath(__DIR__ . '/fixtures/ignored/file.php'), $result);
     }
 
     /**
@@ -69,13 +104,15 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function pathToInspectCanBeGuessedFromUsedFiles()
     {
-        $unusedFiles = $this->task->getUnusedPhpFiles(
-            [__DIR__ . '/fixtures/used/file.php', __DIR__ . '/fixtures/virtual-used-file.php'],
+        $output = new BufferedOutput();
+        $this->task->getUnusedPhpFiles(
+            $this->pathToUsedFiles,
             null,
-            ['#' . __DIR__ . '/fixtures/ignored/.*#']
+            $this->pathToOutput,
+            null,
+            new SymfonyStyle(new StringInput(''), $output)
         );
 
-        $this->assertCount(1, $unusedFiles);
-        $this->assertContains(realpath(__DIR__ . '/fixtures/file.php'), $unusedFiles);
+        $this->assertContains(' ' . __DIR__ . '/fixtures/used ', $output->fetch());
     }
 }
