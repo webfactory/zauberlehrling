@@ -8,7 +8,7 @@ use Composer\IO\BufferIO;
 use Composer\Package\PackageInterface;
 use Helper\FileSystem;
 use Helper\NullStyle;
-use Symfony\Component\Console\Style\OutputStyle;
+use Symfony\Component\Console\Style\StyleInterface;
 
 /**
  * Get unused composer packages.
@@ -29,7 +29,7 @@ final class Task
     /** @var string */
     private $pathToVendor;
 
-    /** @var OutputStyle */
+    /** @var StyleInterface */
     private $ioStyle;
 
     /**
@@ -37,9 +37,9 @@ final class Task
      * @param string|null $pathToVendor
      * @param string $pathToUsedFiles
      * @param string|null $pathToBlacklist
-     * @param OutputStyle|null $ioStyle
+     * @param StyleInterface|null $ioStyle
      */
-    public function getUnusedPackagePaths($pathToComposerJson, $pathToVendor, $pathToUsedFiles, $pathToBlacklist = null, OutputStyle $ioStyle = null)
+    public function getUnusedPackagePaths($pathToComposerJson, $pathToVendor, $pathToUsedFiles, $pathToBlacklist = null, StyleInterface $ioStyle = null)
     {
         $this->ioStyle = $ioStyle ?: new NullStyle();
 
@@ -58,10 +58,10 @@ final class Task
             }
         }
 
-        $ioStyle->newLine();
-        $ioStyle->text('Calculated ' . count($unusedPackagePaths) . ' potentially unused packages:');
-        $ioStyle->listing($unusedPackagePaths);
-        $ioStyle->success('Finished listing potentially unused packages.');
+        $this->ioStyle->newLine();
+        $this->ioStyle->text('Calculated ' . count($unusedPackagePaths) . ' potentially unused packages:');
+        $this->ioStyle->listing($unusedPackagePaths);
+        $this->ioStyle->success('Finished listing potentially unused packages.');
     }
 
     /**
