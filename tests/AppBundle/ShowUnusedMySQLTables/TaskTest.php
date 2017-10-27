@@ -144,6 +144,9 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
                            ->method('where')
                            ->willReturnSelf();
         $mockedQueryBuilder->expects($this->any())
+                           ->method('groupBy')
+                           ->willReturnSelf();
+        $mockedQueryBuilder->expects($this->any())
                            ->method('execute')
                            ->willReturn($mockedStatement);
 

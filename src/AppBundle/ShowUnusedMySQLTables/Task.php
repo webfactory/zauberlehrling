@@ -93,7 +93,7 @@ final class Task
     {
         $stmt = $this->getLoggedQueriesStatement();
         $numberOfLoggedQueries = $stmt->rowCount();
-        $this->ioStyle->text('Analyzing ' . $numberOfLoggedQueries . ' logged queries (among all databases):');
+        $this->ioStyle->text('Analyzing ' . $numberOfLoggedQueries . ' unique logged queries (among all databases):');
 
         $this->ioStyle->progressStart($numberOfLoggedQueries);
 
@@ -125,6 +125,7 @@ final class Task
                                 ->select('argument')
                                 ->from($this->dbSystemCatalogPrefix . 'general_log')
                                 ->where("command_type = 'Query'")
+                                ->groupBy('argument')
                                 ->execute();
     }
 
