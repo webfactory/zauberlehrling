@@ -134,7 +134,7 @@ final class Task
         $parser = new PHPSQLParser();
         $parsedQuery = $parser->parse($loggedQuery);
 
-        if (!array_key_exists('FROM', $parsedQuery)) {
+        if (!is_array($parsedQuery) || !array_key_exists('FROM', $parsedQuery)) {
             return [];
         }
 

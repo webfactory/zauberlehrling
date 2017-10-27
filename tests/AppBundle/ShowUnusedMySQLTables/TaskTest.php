@@ -96,6 +96,23 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @test
+     */
+    public function commentQueriesDoNoHarm()
+    {
+        $this->setUpConnectionToReturnAsAllTablenames(['foo']);
+        $this->setUpSelectStatementToReturn(['-- MySQL dump 10.13  Distrib 5.5.49, for debian-linux-gnu (x86_64)']);
+
+        $output = new BufferedOutput();
+        $ioStyle = new SymfonyStyle(new StringInput(''), $output);
+        $this->task->getUnusedTableNames($ioStyle);
+
+        $outputAsString = $output->fetch();
+        $this->assertContains('Calculated 1 potentially unused table', $outputAsString);
+        $this->assertContains('foo', $outputAsString);
+    }
+
+    /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function setUpSelectStatementToReturn(array $returnValues)
