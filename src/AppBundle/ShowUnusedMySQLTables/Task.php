@@ -99,10 +99,15 @@ final class Task
 
         $usedTableNames = [];
         while ($loggedQuery = $stmt->fetch(\PDO::FETCH_COLUMN)) {
-            $usedTableNames = array_merge($usedTableNames, $this->extractTableNamesFromLoggedQuery($loggedQuery));
+            $usedTableNames[] = $this->extractTableNamesFromLoggedQuery($loggedQuery);
             $this->ioStyle->progressAdvance();
         }
 
+        if ($usedTableNames === []) {
+            return $usedTableNames;
+        }
+
+        $usedTableNames = call_user_func_array('array_merge', $usedTableNames);
         $usedTableNames = array_unique($usedTableNames);
 
         $this->ioStyle->newLine();
