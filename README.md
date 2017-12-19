@@ -98,10 +98,24 @@ fwrite($filePointer, implode(PHP_EOL, array_keys(xdebug_get_code_coverage())));
 fclose($filePointer);
 ```
 
-Now, when you execute your behat tests, all executed files will be written to ```$outputFile```. I don't recommend
+Now, when you execute your behat tests, all executed PHP files will be written to ```$outputFile```. I don't recommend
 executing your unit tests now, as these tests could cover code never used in production.  
 
-You can consolidate this file (removing duplicates and sort the file nameslist) with
+You're in no way restricted to xdebug for collecting your coverage. E.g., you could also do some Aspect Oriented Programming (AOP) magic, just remember it may have more advanced requirements than your monolith runtime environment can fulfill. Another idea is utilizing [sysdig](https://www.sysdig.org/) or some other form of file system monitoring.
+
+File system monitoring tools can be tricky to use:
+
+- You have to make sure the file system access you wish to log are done in reality. If the file system access is cached away by some shady component in your environment, you won't get all used files (false negatives).
+- Some tools like to index all files - e.g. for a desktop search or your IDE for static code analysis. You have to stop them from opening all files during your logging session or you will get too many results (false positives).
+
+But if you manage to set up everything fine, file system monitoring tools have one big advantage: they're not restricted to logging executed PHP files, but can report accessed files of all sorts, e.g. configuration files. That improves the detection of (un)used packages.
+
+For sysdig, you might want to try:
+
+    sudo sysdig -p "%fd.name" evt.type=open |grep "/your/project/" |grep -v "/your/project/tmp/" |grep -v "/your/project/log/" > used-files.txt
+
+
+You can consolidate this file (removing duplicates and sort the file names list) with
 
     bin/console consolidate-used-files usedFiles
 
