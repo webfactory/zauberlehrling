@@ -2,10 +2,12 @@
 
 namespace Helper;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Test for the file system helper.
  */
-final class FileSystemTest extends \PHPUnit_Framework_TestCase
+final class FileSystemTest extends TestCase
 {
     /**
      * Original file permissions before chmod'ing them for a test.
@@ -106,7 +108,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
      */
     public function getBlacklistingRegExpsRejectsUnreadableFile()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         FileSystem::getBlacklistingRegExps(__DIR__ . '/non-existing-file');
     }
 
@@ -176,7 +178,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
      */
     public function getPathToOutputRejectsUnwritablePaths()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         FileSystem::getPathToOutput(__DIR__ . '/fixtures/does-not-exist/foo', '', '');
     }
 
@@ -188,7 +190,7 @@ final class FileSystemTest extends \PHPUnit_Framework_TestCase
         $pathToUnwritableYetReadableFile = __DIR__ . '/fixtures/unwritable-yet-readable-file.txt';
         static::ensurePermissionsFor(0400, $pathToUnwritableYetReadableFile);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         FileSystem::getPathToOutput($pathToUnwritableYetReadableFile, '', '');
 
         static::restoreOriginalPermissionsFor($pathToUnwritableYetReadableFile);

@@ -1,8 +1,10 @@
 <?php
 
 namespace AppBundle\ShowUnusedComposerPackages;
+
 use Helper\FileSystem;
 use Helper\FileSystemTest;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -10,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Tests for the ShowUnusedComposerPackages Task.
  */
-final class TaskTest extends \PHPUnit_Framework_TestCase
+final class TaskTest extends TestCase
 {
     /**
      * System under test.
@@ -31,9 +33,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     /** @var string */
     private $pathToBlacklist;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         $this->pathToComposerJson = __DIR__ . '/fixtures/composer.json';
@@ -54,9 +53,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/vendor/author-1/ignored-package#'], $this->pathToBlacklist);
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         // revert files so git doesn't recognise a change
@@ -81,7 +77,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function invalidPathToVendorGetsRejected()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
 
         $this->task->getUnusedPackagePaths($this->pathToComposerJson, 'invalid path', $this->pathToUsedFiles, null);
     }
@@ -94,7 +90,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         FileSystemTest::ensurePermissionsFor(0200, $this->pathToVendor);
 
         try {
-            $this->setExpectedException(\InvalidArgumentException::class);
+            $this->expectException(\InvalidArgumentException::class);
             $this->task->getUnusedPackagePaths($this->pathToComposerJson, $this->pathToVendor, $this->pathToUsedFiles, null);
         } finally {
             FileSystemTest::restoreOriginalPermissionsFor($this->pathToVendor);

@@ -7,6 +7,7 @@ use Doctrine\DBAL\Driver\Statement;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -14,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Tests for the ShowUnusedMySQLTables task.
  */
-final class TaskTest extends \PHPUnit_Framework_TestCase
+final class TaskTest extends TestCase
 {
     /**
      * System under test.
@@ -28,15 +29,12 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     private $connection;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         $this->connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
         $this->connection->expects($this->any())
                          ->method('getDatabasePlatform')
-                         ->willReturn($this->getMock(\Doctrine\DBAL\Platforms\AbstractPlatform::class));
+                         ->willReturn($this->getMockForAbstractClass(\Doctrine\DBAL\Platforms\AbstractPlatform::class));
 
         $this->task = new Task($this->connection, '');
     }

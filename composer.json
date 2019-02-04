@@ -17,7 +17,7 @@
         }
     },
     "require": {
-        "php": ">=5.5.9",
+        "php": "^7.2",
         "ext-PDO": "*",
         "doctrine/common": "^2.4",
         "doctrine/doctrine-bundle": "^1.6",
@@ -62,7 +62,7 @@
         "egulias/email-validator": "^1.2,>=1.2.8|^2.0",
         "ocramius/proxy-manager": "^0.4|^1.0|^2.0",
         "phpdocumentor/reflection-docblock": "^3.0",
-        "phpunit/phpunit": "^4.8",
+        "phpunit/phpunit": "^7.5",
         "predis/predis": "^1.0",
         "roave/security-advisories": "dev-master",
         "satooshi/php-coveralls": "^1.0",

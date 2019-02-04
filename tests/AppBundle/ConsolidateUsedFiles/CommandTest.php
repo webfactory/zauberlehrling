@@ -21,9 +21,6 @@ final class CommandTest extends KernelTestCase
     /** @var string */
     private $pathToFixture;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         // set up command tester
@@ -37,9 +34,6 @@ final class CommandTest extends KernelTestCase
         copy(__DIR__ . '/fixtures/template-to-copy.txt', $this->pathToFixture);
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         unlink($this->pathToFixture);

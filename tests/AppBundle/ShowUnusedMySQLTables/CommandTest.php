@@ -17,9 +17,6 @@ final class CommandTest extends KernelTestCase
     /** @var CommandTester */
     private $commandTester;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         // set up command tester

@@ -30,9 +30,6 @@ final class CommandTest extends KernelTestCase
     /** @var string */
     private $pathToBlacklist;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         // set up command tester
@@ -50,9 +47,6 @@ final class CommandTest extends KernelTestCase
         FileSystem::writeArrayToFile([__DIR__ . '/fixtures/used/file.php'], $this->pathToUsedFiles);
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         // revert files so git doesn't recognise a change

@@ -3,11 +3,12 @@
 namespace AppBundle\ShowUnusedPublicAssets;
 
 use Helper\FileSystem;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the ShowUnusedPublicAssets task.
  */
-final class TaskTest extends \PHPUnit_Framework_TestCase
+final class TaskTest extends TestCase
 {
     /**
      * System under test.
@@ -31,9 +32,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     /** @var string */
     private $pathToBlacklist;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         $this->task = new Task();
@@ -47,9 +45,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/ignored/asset.css#'], $this->pathToBlacklist);
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         // revert files so git doesn't recognise a change

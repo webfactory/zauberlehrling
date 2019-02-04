@@ -3,11 +3,12 @@
 namespace AppBundle\ConsolidateUsedFiles;
 
 use Helper\FileSystemTest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for the ConsolidateUsedFiles task.
  */
-final class TaskTest extends \PHPUnit_Framework_TestCase
+final class TaskTest extends TestCase
 {
     /**
      * System under test.
@@ -21,9 +22,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     private $fileForTesting;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         $this->fileForTesting = __DIR__ . '/fixtures/tmp-file-for-testing.txt';
@@ -32,9 +30,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $this->task = new Task();
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         unlink($this->fileForTesting);
@@ -69,7 +64,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function nonExistingFileGetsRejected()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->task->consolidate(__DIR__ . '/non-existing-file');
     }
 
@@ -78,7 +73,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function directoryGetsRejected()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->task->consolidate(__DIR__);
     }
 
@@ -90,7 +85,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $pathToFile = __DIR__ . '/../../Helper/fixtures/unreadable-yet-writable-file.txt';
         FileSystemTest::ensurePermissionsFor(0200, $pathToFile);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         try {
             $this->task->consolidate($pathToFile);
         } finally {
@@ -106,7 +101,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         $pathToFile = __DIR__ . '/../../Helper/fixtures/unwritable-yet-readable-file.txt';
         FileSystemTest::ensurePermissionsFor(0400, $pathToFile);
 
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         try {
             $this->task->consolidate($pathToFile);
         } finally {

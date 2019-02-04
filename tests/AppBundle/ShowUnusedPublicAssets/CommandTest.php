@@ -27,9 +27,6 @@ final class CommandTest extends KernelTestCase
     /** @var string */
     private $pathToOutput;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         // set up command tester
@@ -44,9 +41,6 @@ final class CommandTest extends KernelTestCase
         $this->pathToOutput = __DIR__ . '/potentially-unused-assets.txt';
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         // revert files so git doesn't recognise a change

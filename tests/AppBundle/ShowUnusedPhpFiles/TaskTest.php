@@ -3,6 +3,7 @@
 namespace AppBundle\ShowUnusedPhpFiles;
 
 use Helper\FileSystem;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -10,7 +11,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Tests for the ShowUnusedPhpFiles task.
  */
-final class TaskTest extends \PHPUnit_Framework_TestCase
+final class TaskTest extends TestCase
 {
     /**
      * System under test.
@@ -31,9 +32,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
     /** @var string */
     private $pathToBlacklist;
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::setUp()
-     */
     protected function setUp()
     {
         $this->task = new Task();
@@ -47,9 +45,6 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
         FileSystem::writeArrayToFile(['#' . __DIR__ . '/fixtures/ignored/file.php#'], $this->pathToBlacklist);
     }
 
-    /**
-     * @see \PHPUnit_Framework_TestCase::tearDown()
-     */
     protected function tearDown()
     {
         // revert files so git doesn't recognise a change
@@ -63,7 +58,7 @@ final class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function emptyUsedFilesGetRejected()
     {
-        $this->setExpectedException(\InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->task->getUnusedPhpFiles(__DIR__ . '/fixtures/empty.txt', null, null, null);
     }
 

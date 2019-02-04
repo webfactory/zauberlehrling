@@ -2,10 +2,12 @@
 
 namespace AppBundle\ShowUnusedPhpFiles;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * Tests for the CommonPathDeterminator.
  */
-final class CommonPathDeterminatorTest extends \PHPUnit_Framework_TestCase
+final class CommonPathDeterminatorTest extends TestCase
 {
     /**
      * @test
