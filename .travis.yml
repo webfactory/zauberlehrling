@@ -18,4 +18,4 @@ after_success:
 
 matrix:
   allow_failures:
-    - php: 'hhvm'
+    - php: 'master'
