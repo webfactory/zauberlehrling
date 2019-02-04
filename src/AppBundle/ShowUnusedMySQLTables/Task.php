@@ -44,6 +44,7 @@ final class Task
     /**
      * @param Connection $connection
      * @param string $dbSystemCatalogPrefix
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function __construct(Connection $connection, $dbSystemCatalogPrefix)
     {

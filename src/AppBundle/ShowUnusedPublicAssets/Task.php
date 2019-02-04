@@ -4,7 +4,7 @@ namespace AppBundle\ShowUnusedPublicAssets;
 
 use Helper\FileSystem;
 use Helper\NullStyle;
-use Symfony\Component\Console\Style\OutputStyle;
+use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -19,9 +19,9 @@ final class Task
      * @param string $regExpToFindFile
      * @param string|null $pathToOutput
      * @param string|null $pathToBlacklist
-     * @param OutputStyle|null $ioStyle
+     * @param StyleInterface|null $ioStyle
      */
-    public function getUnusedPublicAssets($pathToPublic, $pathToLogfile, $regExpToFindFile, $pathToOutput, $pathToBlacklist, OutputStyle $ioStyle = null)
+    public function getUnusedPublicAssets($pathToPublic, $pathToLogfile, $regExpToFindFile, $pathToOutput, $pathToBlacklist, StyleInterface $ioStyle = null)
     {
         $ioStyle = $ioStyle ?: new NullStyle();
         $ioStyle->text('Started.');

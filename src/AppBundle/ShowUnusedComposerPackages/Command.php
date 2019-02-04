@@ -41,7 +41,7 @@ final class Command extends BaseCommand
         $this->setName('show-unused-composer-packages')
              ->setDescription('Show a list of potentially unused composer packages.')
              ->addArgument(self::ARGUMENT_COMPOSER_JSON, InputArgument::REQUIRED, 'Path to the project\'s composer.json.')
-             ->addOption(self::OPTION_VENDOR_DIRECTORY, 'l', InputOption::VALUE_REQUIRED, 'Path to the project\'s vendor directory.', null)
+             ->addOption(self::OPTION_VENDOR_DIRECTORY, 'l', InputOption::VALUE_REQUIRED, 'Path to the project\'s vendor directory.')
              ->addArgument(self::ARGUMENT_USED_FILES, InputArgument::REQUIRED, 'Path to the list of used files.')
              ->addOption(self::OPTION_PATH_TO_BLACKLIST, 'b', InputOption::VALUE_REQUIRED, 'Path to a file containing a blacklist of regular expressions to exclude from the output. One regular expression per line, don\'t forget the delimiters. E.g.: ' . PHP_EOL . '#^/project/keepme.php#' . PHP_EOL . '#^/project/tmp/#' . PHP_EOL . '#.*Test.php#');
     }

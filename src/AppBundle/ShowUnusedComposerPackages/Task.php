@@ -44,7 +44,7 @@ final class Task
         $this->ioStyle = $ioStyle ?: new NullStyle();
 
         $usedFiles = FileSystem::readFileIntoArray($pathToUsedFiles);
-        $this->ioStyle->text('Found ' . (count($usedFiles)) . ' used files.');
+        $this->ioStyle->text('Found ' . count($usedFiles) . ' used files.');
 
         $usedFiles = $this->getRelevantUsedFiles($usedFiles);
 

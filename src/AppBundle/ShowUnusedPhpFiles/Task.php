@@ -4,7 +4,7 @@ namespace AppBundle\ShowUnusedPhpFiles;
 
 use Helper\FileSystem;
 use Helper\NullStyle;
-use Symfony\Component\Console\Style\OutputStyle;
+use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -17,10 +17,10 @@ final class Task
      * @param string|null $pathToInspect
      * @param string|null $userProvidedPathToOutput
      * @param string|null $userProvidedPathToBlacklist
-     * @param OutputStyle|null $ioStyle
+     * @param StyleInterface|null $ioStyle
      * @throws \InvalidArgumentException
      */
-    public function getUnusedPhpFiles($userProvidedPathToUsedFiles, $pathToInspect, $userProvidedPathToOutput, $userProvidedPathToBlacklist, OutputStyle $ioStyle = null)
+    public function getUnusedPhpFiles($userProvidedPathToUsedFiles, $pathToInspect, $userProvidedPathToOutput, $userProvidedPathToBlacklist, StyleInterface $ioStyle = null)
     {
         $ioStyle = $ioStyle ?: new NullStyle();
         $ioStyle->text('Started.');

@@ -56,7 +56,7 @@ final class FileSystem
             throw new \InvalidArgumentException($userProvidedPathToBlacklist . ' is no readable file');
         }
 
-        return FileSystem::readFileIntoArray($userProvidedPathToBlacklist);
+        return self::readFileIntoArray($userProvidedPathToBlacklist);
     }
 
     /**
