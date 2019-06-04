@@ -40,7 +40,7 @@ final class Task
         $blacklistingRegExps = FileSystem::getBlacklistingRegExps($userProvidedPathToBlacklist);
         $foundFiles = FileSystem::filterFilesIn($foundFilesInfos, $blacklistingRegExps);
 
-        $message = 'Found ' . count($foundFiles) . ' PHP files';
+        $message = 'Found ' . count($foundFiles) . ' used PHP files';
         $numberOfBlacklistingRegExps = count($blacklistingRegExps);
         if ($numberOfBlacklistingRegExps > 0) {
             $message .= ' not matched by the ' . $numberOfBlacklistingRegExps . ' blacklisting regular expressions';
@@ -52,16 +52,22 @@ final class Task
 
         $pathToOutput = FileSystem::getPathToOutput($userProvidedPathToOutput, $userProvidedPathToUsedFiles, 'potentially-unused-files.txt');
         FileSystem::writeArrayToFile($unusedPhpFiles, $pathToOutput);
-        $ioStyle->success([
-            'Finished writing list of ' . count($unusedPhpFiles) . ' potentially unused PHP files. Please inspect the '
-                . 'output file ' . $pathToOutput,
-            'For files you want to keep (even if they are not used according to the code coverage of your tests), you '
-                . 'can maintain a blacklist. With it, you can exclude these files from the output of further runs of '
-                . 'this command. See --help or the readme for details.',
-            'Once you are sure you can restore the rest of the files (ideally from your version control system), try '
-                . 'deleting them, e.g. with "xargs -0 -d \'\n\' rm < ' . $pathToOutput . '" and rerun your tests to see if that '
-                . 'broke anything.',
-        ]);
+
+        $successMessages = count($unusedPhpFiles) === 0
+            ? [
+                'No potentially unused PHP files found.'
+            ]
+            : [
+                'Finished writing list of ' . count($unusedPhpFiles) . ' potentially unused PHP files. Please inspect the '
+                    . 'output file ' . $pathToOutput,
+                'For files you want to keep (even if they are not used according to the code coverage of your tests), you '
+                    . 'can maintain a blacklist. With it, you can exclude these files from the output of further runs of '
+                    . 'this command. See --help or the readme for details.',
+                'Once you are sure you can restore the rest of the files (ideally from your version control system), try '
+                    . 'deleting them, e.g. with "xargs -0 -d \'\n\' rm < ' . $pathToOutput . '" and rerun your tests to see if that '
+                    . 'broke anything.',
+            ];
+        $ioStyle->success($successMessages);
     }
 
     /**
