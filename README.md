@@ -144,6 +144,7 @@ and these options:
    
   The file should contain one regular expression per line, e.g.:
  
+      #/var/www/my-project/features/.*# 
       #/var/www/my-project/tmp/.*# 
       #/var/www/my-project/vendor/.*# 
       #/var/www/my-project/file-only-used-in-production-environment.php# 
