@@ -59,7 +59,7 @@ final class Task
                 . 'can maintain a blacklist. With it, you can exclude these files from the output of further runs of '
                 . 'this command. See --help or the readme for details.',
             'Once you are sure you can restore the rest of the files (ideally from your version control system), try '
-                . 'deleting them, e.g. with "xargs rm < ' . $pathToOutput . '" and rerun your tests to see if that '
+                . 'deleting them, e.g. with "xargs -0 -d \'\n\' rm < ' . $pathToOutput . '" and rerun your tests to see if that '
                 . 'broke anything.',
         ]);
     }
