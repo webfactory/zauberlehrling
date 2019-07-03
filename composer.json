@@ -21,7 +21,7 @@
         "ext-PDO": "*",
         "doctrine/common": "^2.4",
         "doctrine/doctrine-bundle": "^1.6",
-        "greenlion/php-sql-parser": "^4.1",
+        "greenlion/php-sql-parser": "^4.2.1",
         "incenteev/composer-parameter-handler": "^2.0",
         "psr/cache": "^1.0",
         "psr/log": "^1.0",
