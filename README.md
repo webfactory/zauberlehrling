@@ -3,7 +3,6 @@ zauberlehrling
 
 [![Build Status](https://travis-ci.org/webfactory/zauberlehrling.svg?branch=master)](https://travis-ci.org/webfactory/zauberlehrling)
 [![Coverage Status](https://coveralls.io/repos/github/webfactory/zauberlehrling/badge.svg?branch=master)](https://coveralls.io/github/webfactory/zauberlehrling?branch=master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/webfactory/zauberlehrling/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/webfactory/zauberlehrling/?branch=master)
 
 A collection of tools and ideas for splitting up a big monolithic PHP application in smaller parts, i.e. smaller
 applications and microservices. It contains console commands for identifying potentially unused PHP files, Composer
